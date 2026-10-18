@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+:root {
+  --background: #F6F4F2;
+  --foreground: #111111;
+  --surface: #FFFFFF;
+  --surface-subtle: #F7F5F3;
+  --border: #E7E2DE;
+  --border-subtle: #F0EBE6;
+  --muted: #5F5F5F;
+  --accent: #690B1B;
+  --accent-hover: #7A1022;
+  --accent-gold: #C9A55D;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-poppins), 'Poppins', sans-serif;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 100vh;
+}
+
+/* Subtle scrollbar */
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+* {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+/* Glassmorphism and brand shadows */
+.shadow-brand {
+  box-shadow: 0 10px 25px rgba(105, 11, 27, 0.18);
+}
+
+.shadow-card {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.shadow-hover {
+  box-shadow: 0 12px 30px rgba(105, 11, 27, 0.12);
+}
