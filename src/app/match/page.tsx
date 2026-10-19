@@ -6,17 +6,17 @@ import Image from 'next/image';
 import { SCHOOLS_DATA } from '@/data/schoolsData';
 import { School } from '@/types/school';
 import { useSchool } from '@/context/SchoolContext';
+import { getSchoolImage } from '@/components/schools/SchoolCard';
 import { 
   Sparkles, 
-  ArrowRight, 
-  ArrowLeft, 
-  CheckCircle2, 
   RotateCcw, 
   MapPin, 
-  Star, 
   IndianRupee, 
   GraduationCap,
-  Award
+  Layers,
+  ThumbsUp,
+  Award,
+  ArrowRight
 } from 'lucide-react';
 
 interface Question {
@@ -27,7 +27,6 @@ interface Question {
     label: string;
     description: string;
     boardWeight: { IB: number; IGCSE: number; ICSE: number; CBSE: number };
-    preferredType?: string;
     maxBudget?: number;
   }[];
 }
@@ -89,62 +88,37 @@ const QUESTIONS: Question[] = [
   },
   {
     id: 3,
-    title: 'What school environment best supports your child’s lifestyle?',
-    subtitle: 'Considering campus dynamics, commute, and residential pastoral care.',
+    title: 'What is your annual tuition budget expectation?',
+    subtitle: 'Schools Simplified features verified fee structures across every bracket.',
     options: [
       {
-        label: 'Urban Day School in City',
-        description: 'Daily parent involvement, local extracurriculars, and close family proximity.',
-        boardWeight: { IB: 2, IGCSE: 2, ICSE: 2, CBSE: 2 },
-        preferredType: 'Day School'
-      },
-      {
-        label: 'Prestigious Residential Boarding Academy (Hills / Estate)',
-        description: 'Focus on independent leadership, round-the-clock sports, camaraderie, and character.',
-        boardWeight: { IB: 3, IGCSE: 2, ICSE: 3, CBSE: 2 },
-        preferredType: 'Boarding School'
-      },
-      {
-        label: 'Flexible Day-cum-Boarding Institution',
-        description: 'Modern campus providing both extended day scholar and weekday boarding choices.',
-        boardWeight: { IB: 2, IGCSE: 3, ICSE: 2, CBSE: 2 },
-        preferredType: 'Day & Boarding'
-      }
-    ]
-  },
-  {
-    id: 4,
-    title: 'What is your comfortable annual tuition budget?',
-    subtitle: 'Excludes optional international field trips and uniform kits.',
-    options: [
-      {
-        label: 'Under ₹4 Lakhs / year',
-        description: 'High academic value with established national standards.',
+        label: 'Affordable / Moderate (Under ₹3,00,000 / year)',
+        description: 'High academic standard state-supported or premier government institutions.',
         boardWeight: { IB: 0, IGCSE: 1, ICSE: 3, CBSE: 4 },
-        maxBudget: 400000
+        maxBudget: 300000
       },
       {
-        label: '₹4 Lakhs to ₹9 Lakhs / year',
-        description: 'Premier metro day schools with international faculties and modern STEM labs.',
-        boardWeight: { IB: 3, IGCSE: 4, ICSE: 3, CBSE: 2 },
-        maxBudget: 900000
+        label: 'Mid-Tier Premium (₹3,00,000 - ₹7,00,000 / year)',
+        description: 'Reputed Cambridge IGCSE and ICSE institutions with strong campus amenities.',
+        boardWeight: { IB: 2, IGCSE: 4, ICSE: 4, CBSE: 3 },
+        maxBudget: 700000
       },
       {
-        label: '₹10 Lakhs+ / year (World-class facilities & Residential)',
-        description: 'Top-tier IB World schools and heritage boarding estates with equestrian & Olympic pools.',
-        boardWeight: { IB: 4, IGCSE: 3, ICSE: 2, CBSE: 1 },
+        label: 'Elite International (₹7,00,000 - ₹15,00,000+ / year)',
+        description: 'World-class IB continuum schools with multinational faculty and college counsellors.',
+        boardWeight: { IB: 5, IGCSE: 3, ICSE: 1, CBSE: 1 },
         maxBudget: 2500000
       }
     ]
   },
   {
-    id: 5,
-    title: "How does your child learn most effectively?",
-    subtitle: 'Matching pedagogical methodology to natural cognitive disposition.',
+    id: 4,
+    title: 'What pedagogical style resonates best with your child?',
+    subtitle: 'Different curricula nurture different problem-solving orientations.',
     options: [
       {
-        label: 'Inquiry-Driven & Project Explorer',
-        description: 'Thrives when asking "Why?", conducting personal research, debates, and presentations.',
+        label: 'Inquiry-Based & Research-Oriented Explorer',
+        description: 'Thrives on questions, debates, critical analysis, and hands-on projects.',
         boardWeight: { IB: 4, IGCSE: 3, ICSE: 2, CBSE: 1 }
       },
       {
@@ -156,11 +130,6 @@ const QUESTIONS: Question[] = [
         label: 'Passionate in Arts, Literature & Debate',
         description: 'Deep love for essay writing, literature, linguistic expression, and theatre.',
         boardWeight: { IB: 3, IGCSE: 3, ICSE: 4, CBSE: 2 }
-      },
-      {
-        label: 'All-Rounder with High Focus on Sports & Leadership',
-        description: 'Thrives in expansive campuses with competitive athletics, polo, swimming, and teamwork.',
-        boardWeight: { IB: 3, IGCSE: 2, ICSE: 3, CBSE: 3 }
       }
     ]
   }
@@ -182,7 +151,6 @@ export default function MatcherPage() {
     if (currentStep < QUESTIONS.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Calculate
       setIsCalculating(true);
       setTimeout(() => {
         setIsCalculating(false);
@@ -205,7 +173,6 @@ export default function MatcherPage() {
   // Compute matched board and ranked school recommendations
   const getResults = () => {
     const boardScores = { IB: 0, IGCSE: 0, ICSE: 0, CBSE: 0 };
-    let preferredType = '';
     let budgetCap = 2500000;
 
     answers.forEach((ansIdx, qIdx) => {
@@ -216,7 +183,6 @@ export default function MatcherPage() {
         boardScores.IGCSE += opt.boardWeight.IGCSE;
         boardScores.ICSE += opt.boardWeight.ICSE;
         boardScores.CBSE += opt.boardWeight.CBSE;
-        if (opt.preferredType) preferredType = opt.preferredType;
         if (opt.maxBudget) budgetCap = opt.maxBudget;
       }
     });
@@ -230,11 +196,11 @@ export default function MatcherPage() {
     // Score schools
     const scoredSchools = SCHOOLS_DATA.map((school) => {
       let score = 70; // baseline
-      if (school.boards.includes(topBoard as any)) score += 18;
+      const bLower = school.board.toLowerCase();
+      const targetLower = topBoard.toLowerCase();
+      if (bLower.includes(targetLower)) score += 18;
       if (school.primaryBoard === topBoard) score += 8;
-      if (preferredType && school.schoolType.includes(preferredType)) score += 10;
-      if (school.annualFeeMin <= budgetCap) score += 6;
-      if (school.rating >= 4.88) score += 4;
+      if (school.feeMin <= budgetCap && school.feeMin > 0) score += 6;
       const matchPercentage = Math.min(99, Math.round(score));
       return { school, matchPercentage };
     }).sort((a, b) => b.matchPercentage - a.matchPercentage).slice(0, 4);
@@ -253,7 +219,7 @@ export default function MatcherPage() {
           Intelligent Recommendation Engine
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-[#111] tracking-tight">
-          Find Your Child's Ideal School & Board
+          Find Your Child's Ideal School &amp; Board
         </h1>
         <p className="mt-2 text-[15px] text-[#666] max-w-xl mx-auto">
           Takes under 60 seconds. We analyze your academic vision, target university timeline, and family values.
@@ -261,7 +227,7 @@ export default function MatcherPage() {
       </div>
 
       {!completed && !isCalculating ? (
-        <div className="bg-white rounded-3xl border border-[#E7E2DE] p-6 sm:p-10 shadow-sm relative overflow-hidden">
+        <div className="bg-white rounded-3xl border border-[#E7E2DE] p-6 sm:p-10 shadow-xs relative overflow-hidden">
           {/* Progress Bar */}
           <div className="mb-8">
             <div className="flex items-center justify-between text-[12px] font-bold text-[#888] uppercase tracking-wider mb-2">
@@ -278,74 +244,61 @@ export default function MatcherPage() {
             </div>
           </div>
 
-          {/* Question Title */}
-          <div className="mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#111] leading-snug">
+          {/* Current Question */}
+          <div className="mb-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#111]">
               {QUESTIONS[currentStep].title}
             </h2>
-            <p className="text-[14px] text-[#666] mt-1">
+            <p className="mt-1 text-[14px] text-[#666]">
               {QUESTIONS[currentStep].subtitle}
             </p>
           </div>
 
-          {/* Options List */}
+          {/* Options */}
           <div className="space-y-3 mb-8">
-            {QUESTIONS[currentStep].options.map((opt, idx) => {
-              const isSelected = answers[currentStep] === idx;
-              return (
-                <button
-                  key={idx}
-                  onClick={() => handleSelectOption(idx)}
-                  className={`w-full text-left p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer flex items-start gap-4 ${
-                    isSelected
-                      ? 'bg-[#FAF0F2] border-[#690B1B] shadow-sm'
-                      : 'bg-[#FAF8F5] border-[#E8E1DA] hover:border-[#690B1B]/40 hover:bg-white'
-                  }`}
-                >
-                  <div
-                    className={`w-5 h-5 rounded-full border mt-0.5 flex items-center justify-center shrink-0 transition-colors ${
-                      isSelected
-                        ? 'border-[#690B1B] bg-[#690B1B] text-white'
-                        : 'border-[#AAA] bg-white'
-                    }`}
-                  >
-                    {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+            {QUESTIONS[currentStep].options.map((option, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleSelectOption(idx)}
+                className="w-full text-left p-4 sm:p-5 rounded-2xl border border-[#E7E2DE] hover:border-[#690B1B] hover:bg-[#FAF0F2]/40 transition-all cursor-pointer group flex items-start gap-4"
+              >
+                <div className="w-6 h-6 rounded-full border-2 border-[#CCC] group-hover:border-[#690B1B] flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-transparent group-hover:bg-[#690B1B] transition-colors" />
+                </div>
+                <div>
+                  <div className="text-[15px] font-bold text-[#111] group-hover:text-[#690B1B]">
+                    {option.label}
                   </div>
-                  <div>
-                    <div className="text-[15px] font-bold text-[#111]">{opt.label}</div>
-                    <div className="text-[13px] text-[#666] mt-0.5">{opt.description}</div>
+                  <div className="text-[13px] text-[#666] mt-0.5 leading-relaxed">
+                    {option.description}
                   </div>
-                </button>
-              );
-            })}
+                </div>
+              </button>
+            ))}
           </div>
 
-          {/* Bottom Back Button */}
+          {/* Navigation Controls */}
           {currentStep > 0 && (
             <button
               onClick={handlePrev}
-              className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#777] hover:text-[#111] transition-colors"
+              className="text-[13px] font-semibold text-[#777] hover:text-[#111] transition-colors"
             >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Previous Question</span>
+              ← Previous Question
             </button>
           )}
         </div>
       ) : isCalculating ? (
-        <div className="bg-white rounded-3xl border border-[#E7E2DE] p-12 text-center shadow-sm">
-          <div className="w-16 h-16 rounded-full border-4 border-[#690B1B] border-t-transparent animate-spin mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-[#111]">Analyzing Compatibility...</h3>
-          <p className="text-[14px] text-[#666] mt-1">
-            Matching your child’s profile with 100+ accredited Indian schools.
-          </p>
+        <div className="bg-white rounded-3xl border border-[#E7E2DE] p-12 text-center shadow-xs">
+          <div className="w-12 h-12 rounded-full border-4 border-[#690B1B] border-t-transparent animate-spin mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-[#111]">Analyzing Curricular Profiles...</h3>
+          <p className="text-[14px] text-[#666] mt-1">Cross-referencing verified schools across India.</p>
         </div>
       ) : (
-        /* Results View */
-        <div className="space-y-8 animate-in fade-in">
-          {/* Top Board Verdict Card */}
-          <div className="bg-gradient-to-br from-[#690B1B] to-[#40050E] text-white rounded-3xl p-6 sm:p-10 shadow-lg">
-            <div className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-wider text-[#C9A55D] mb-2">
-              <Sparkles className="w-4 h-4" /> Recommended Board
+        <div className="space-y-8">
+          {/* Top Recommendation Banner */}
+          <div className="bg-gradient-to-r from-[#690B1B] to-[#8C0C1D] text-white rounded-3xl p-6 sm:p-10 shadow-sm">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-[12px] font-bold uppercase tracking-wider mb-3">
+              <Sparkles className="w-3.5 h-3.5 text-[#C9A55D]" /> Recommended Curriculum
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               {topBoard === 'IB' && 'International Baccalaureate (IB DP / MYP)'}
@@ -354,12 +307,12 @@ export default function MatcherPage() {
               {topBoard === 'CBSE' && 'Central Board of Secondary Education (CBSE)'}
             </h2>
             <p className="mt-3 text-[15px] text-white/90 leading-relaxed max-w-2xl">
-              Based on your target university timeline and child's learning orientation, the {topBoard} framework provides the strongest competitive edge and learning satisfaction.
+              Based on your target university timeline and child's learning orientation, the {topBoard} framework provides the strongest competitive edge.
             </p>
             <div className="mt-5 flex items-center gap-3 flex-wrap">
               <Link
                 href={`/schools?board=${topBoard}`}
-                className="px-5 py-2.5 rounded-full bg-white text-[#690B1B] text-[13px] font-bold shadow-sm hover:bg-[#F6F4F2]"
+                className="px-5 py-2.5 rounded-full bg-white text-[#690B1B] text-[13px] font-bold shadow-xs hover:bg-[#F6F4F2]"
               >
                 Browse All {topBoard} Schools →
               </Link>
@@ -367,7 +320,7 @@ export default function MatcherPage() {
                 href="/curriculum-guide"
                 className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-[13px] font-semibold"
               >
-                Read Curricular Guide
+                Read Curriculum Guide
               </Link>
             </div>
           </div>
@@ -380,7 +333,7 @@ export default function MatcherPage() {
               </h3>
               <button
                 onClick={resetMatcher}
-                className="flex items-center gap-1.5 text-[12.5px] font-bold text-[#690B1B] hover:underline"
+                className="flex items-center gap-1.5 text-[12.5px] font-bold text-[#690B1B] hover:underline cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Retake Assessment</span>
@@ -391,49 +344,58 @@ export default function MatcherPage() {
               {scoredSchools.map(({ school, matchPercentage }) => (
                 <div
                   key={school.id}
-                  className="bg-white rounded-2xl border border-[#E7E2DE] p-4 sm:p-5 shadow-xs hover:shadow-md hover:border-[#690B1B]/40 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                  className="bg-white rounded-2xl border border-[#E7E2DE] p-5 shadow-xs hover:shadow-md hover:border-[#690B1B]/40 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                 >
                   <div className="flex items-start gap-4">
                     <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 bg-stone-100">
                       <Image
-                        src={school.heroImage}
-                        alt={school.name}
+                        src={getSchoolImage(school)}
+                        alt={school.schoolName}
                         fill
                         sizes="80px"
                         className="object-cover"
                       />
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-[12px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
                           {matchPercentage}% Match
                         </span>
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#FAF0F2] text-[#690B1B]">
+                          {school.board}
+                        </span>
                         <span className="text-[11px] font-semibold text-[#888]">
-                          Rank #{school.rank} in India
+                          Grades: {school.grades}
                         </span>
                       </div>
+
                       <Link href={`/schools/${school.slug}`}>
-                        <h4 className="text-[16px] sm:text-[17px] font-bold text-[#111] hover:text-[#690B1B] transition-colors leading-snug">
-                          {school.name}
+                        <h4 className="text-[17px] font-bold text-[#111] hover:text-[#690B1B] transition-colors leading-snug">
+                          {school.schoolName}
                         </h4>
                       </Link>
-                      <div className="text-[12.5px] text-[#666] mt-0.5 flex items-center gap-2 flex-wrap">
+
+                      <div className="text-[12.5px] text-[#666] flex items-center gap-2 flex-wrap">
                         <span className="flex items-center gap-1">
                           <MapPin className="w-3.5 h-3.5 text-[#690B1B]" />
-                          {school.city}
+                          {school.address || school.city}
                         </span>
                         <span>•</span>
-                        <span>{school.feeRangeLabel.split('/')[0]}</span>
-                        <span>•</span>
-                        <span className="font-semibold text-[#690B1B]">{school.primaryBoard} World</span>
+                        <span className="font-bold text-[#690B1B]">{school.approxAnnualFeesInr}</span>
                       </div>
+
+                      {school.pros && (
+                        <p className="text-[12px] text-[#555] line-clamp-1 italic">
+                          "{school.pros}"
+                        </p>
+                      )}
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
                     <button
                       onClick={() => toggleCompare(school.slug)}
-                      className={`px-3 py-2 rounded-xl text-[12px] font-bold border transition-colors ${
+                      className={`px-3 py-2 rounded-xl text-[12px] font-bold border transition-colors cursor-pointer ${
                         isInCompare(school.slug)
                           ? 'bg-[#FAF0F2] border-[#690B1B] text-[#690B1B]'
                           : 'border-[#E7E2DE] text-[#666] hover:bg-[#F6F4F2]'
@@ -445,7 +407,7 @@ export default function MatcherPage() {
                       href={`/schools/${school.slug}`}
                       className="px-4 py-2 rounded-xl bg-[#690B1B] hover:bg-[#7A1022] text-white text-[12.5px] font-bold transition-colors"
                     >
-                      View Profile →
+                      View Details →
                     </Link>
                   </div>
                 </div>

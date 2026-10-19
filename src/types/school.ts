@@ -1,57 +1,42 @@
-export type SchoolBoard = 'IB' | 'IGCSE' | 'ICSE' | 'CBSE';
+export type PrimarySchoolBoard = 'IB' | 'IGCSE' | 'ICSE' | 'CBSE' | 'State Board';
 
-export type SchoolType = 'Day School' | 'Boarding School' | 'Day & Boarding';
-
-export type GenderType = 'Co-educational' | 'All-Boys' | 'All-Girls';
-
+/**
+ * School Model mapped directly to Wix CMS Collection `Import9`.
+ * Only contains fields that exist in the Wix CMS dataset:
+ * - schoolName
+ * - board
+ * - grades
+ * - approxAnnualFeesInr
+ * - contactDetails (and structured helpers: address, phone, email, website, city)
+ * - pros
+ * - cons
+ * - notableAlumniAchievements
+ */
 export interface School {
   id: string;
   slug: string;
-  name: string;
-  tagline: string;
+  schoolName: string;
+  board: string;
+  primaryBoard: PrimarySchoolBoard;
+  grades: string;
+  approxAnnualFeesInr: string;
+  feeMin: number;
+  feeMax: number;
+  contactDetails: string;
+  address: string;
+  phone: string;
+  email: string;
+  website: string;
   city: string;
-  state: string;
-  boards: SchoolBoard[];
-  primaryBoard: SchoolBoard;
-  schoolType: SchoolType;
-  gender: GenderType;
-  established: number;
-  rank: number;
-  rating: number;
-  reviewCount: number;
-  annualFeeMin: number; // in INR
-  annualFeeMax: number; // in INR
-  feeRangeLabel: string;
-  studentTeacherRatio: string;
-  campusSize: string;
-  admissionsStatus: 'Admissions Open 2026-27' | 'Application Closing Soon' | 'Waitlist Open';
-  heroImage: string;
-  galleryImages: string[];
-  badges: string[];
-  description: string;
-  curriculumHighlights: string[];
-  academicAchievements: {
-    title: string;
-    description: string;
-  }[];
-  facilities: string[];
-  collegePlacements: {
-    topUniversities: string[];
-    domesticHighlights: string;
-    internationalHighlights: string;
-  };
-  contact: {
-    address: string;
-    phone: string;
-    email: string;
-    website: string;
-  };
-  gradeLevels: string;
+  pros: string;
+  cons: string;
+  notableAlumniAchievements: string;
+  heroImage?: string;
 }
 
 export interface BoardComparison {
   name: string;
-  code: SchoolBoard;
+  code: 'IB' | 'IGCSE' | 'ICSE' | 'CBSE';
   fullForm: string;
   governingBody: string;
   pedagogyFocus: string;
@@ -59,6 +44,6 @@ export interface BoardComparison {
   idealFor: string;
   pros: string[];
   cons: string[];
-  globalRecognition: string;
-  averageAnnualFee: string;
+  averageAnnualFee?: string;
+  globalRecognition?: string;
 }

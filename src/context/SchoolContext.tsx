@@ -19,7 +19,7 @@ interface SchoolContextType {
 const SchoolContext = createContext<SchoolContextType | undefined>(undefined);
 
 export function SchoolProvider({ children }: { children: React.ReactNode }) {
-  const [compareList, setCompareList] = useState<string[]>(['dhirubhai-ambani-international-school', 'the-international-school-bangalore']);
+  const [compareList, setCompareList] = useState<string[]>(['dhirubhai-ambani-international-school', 'oberoi-international-school']);
   const [shortlist, setShortlist] = useState<string[]>([]);
 
   useEffect(() => {

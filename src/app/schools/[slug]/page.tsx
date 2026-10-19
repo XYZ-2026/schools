@@ -4,7 +4,7 @@ import { SCHOOLS_DATA } from '@/data/schoolsData';
 import SchoolDetailClient from '@/components/schools/SchoolDetailClient';
 
 export function generateStaticParams() {
-  return SCHOOLS_DATA.map((school) => ({
+  return SCHOOLS_DATA.slice(0, 50).map((school) => ({
     slug: school.slug,
   }));
 }
@@ -24,8 +24,8 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${school.name} — Admissions 2026-27, Fees, Ranking & Reviews`,
-    description: `${school.tagline}. Discover verified tuition fee schedules, student-to-teacher ratio (${school.studentTeacherRatio}), and Ivy League placement statistics.`,
+    title: `${school.schoolName} — Board, Fees, Pros & Alumni | Schools Simplified`,
+    description: `${school.schoolName} offers ${school.board} curriculum for grades ${school.grades}. Approx Annual Fees: ${school.approxAnnualFeesInr}. Contact: ${school.contactDetails}`,
   };
 }
 

@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSchool } from '@/context/SchoolContext';
+import { getSchoolImage } from '@/components/schools/SchoolCard';
 import { X, ArrowRight, ArrowLeftRight } from 'lucide-react';
 
 export default function CompareDrawer() {
@@ -24,7 +25,7 @@ export default function CompareDrawer() {
               Compare Schools ({compareList.length}/4)
             </div>
             <div className="text-[12px] text-[#777]">
-              Compare curriculum, fees, faculty ratio & placements
+              Compare board, fees, pros &amp; cons side-by-side
             </div>
           </div>
         </div>
@@ -41,17 +42,17 @@ export default function CompareDrawer() {
               >
                 <div className="w-5 h-5 rounded-md overflow-hidden relative shrink-0">
                   <Image
-                    src={school.heroImage}
-                    alt={school.name}
+                    src={getSchoolImage(school)}
+                    alt={school.schoolName}
                     fill
                     sizes="20px"
                     className="object-cover"
                   />
                 </div>
-                <span className="max-w-[110px] sm:max-w-[130px] truncate">{school.name}</span>
+                <span className="max-w-[120px] sm:max-w-[150px] truncate">{school.schoolName}</span>
                 <button
                   onClick={() => removeFromCompare(slug)}
-                  className="w-4 h-4 rounded-full hover:bg-black/10 flex items-center justify-center text-[#777] hover:text-[#111]"
+                  className="w-4 h-4 rounded-full hover:bg-black/10 flex items-center justify-center text-[#777] hover:text-[#111] cursor-pointer"
                   title="Remove from comparison"
                 >
                   <X className="w-3 h-3" />
@@ -65,7 +66,7 @@ export default function CompareDrawer() {
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={clearCompare}
-            className="text-[13px] font-medium text-[#777] hover:text-[#690B1B] px-3 py-1.5"
+            className="text-[13px] font-medium text-[#777] hover:text-[#690B1B] px-3 py-1.5 cursor-pointer"
           >
             Clear
           </button>

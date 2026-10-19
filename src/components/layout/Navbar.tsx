@@ -36,57 +36,57 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-[#F6F4F2]/92 backdrop-blur-xl border-b border-[#E7E2DE]">
-      <div className="w-full h-[68px] sm:h-[84px] md:h-[92px] px-4 sm:px-5 md:px-8 lg:px-12 flex items-center justify-between">
+      <div className="w-full h-[68px] sm:h-[84px] md:h-[92px] px-4 sm:px-6 lg:px-8 xl:px-12 flex items-center justify-between">
         {/* LEFT - Logo & Website Name */}
-        <Link href="/" className="flex items-center gap-3 sm:gap-4 cursor-pointer hover:opacity-90 transition-opacity">
-          <div className="relative w-[44px] h-[44px] sm:w-[54px] sm:h-[54px] rounded-[14px] sm:rounded-[16px] shadow-[0_6px_20px_rgba(105,11,27,0.22)] overflow-hidden shrink-0 bg-gradient-to-br from-[#8C0C1D] to-[#5A0612] p-1.5 flex items-center justify-center">
+        <Link href="/" className="flex items-center gap-3 sm:gap-3.5 cursor-pointer hover:opacity-90 transition-opacity shrink-0">
+          <div className="relative w-[44px] h-[44px] sm:w-[52px] sm:h-[52px] rounded-[14px] sm:rounded-[16px] shadow-[0_6px_20px_rgba(105,11,27,0.22)] overflow-hidden shrink-0 bg-gradient-to-br from-[#8C0C1D] to-[#5A0612] p-1.5 flex items-center justify-center">
             <Image 
               src="/logo.png" 
               alt="Schools Simplified Logo" 
-              width={54} 
-              height={54} 
+              width={52} 
+              height={52} 
               priority 
               className="w-full h-full object-contain" 
             />
           </div>
           <div>
-            <div className="text-[17px] sm:text-[20px] md:text-[22px] font-bold tracking-[-0.03em] leading-none text-[#111111]">
+            <div className="text-[17px] sm:text-[20px] md:text-[22px] font-bold tracking-[-0.03em] leading-none text-[#111111] whitespace-nowrap">
               Schools Simplified
             </div>
             <div className="hidden sm:flex mt-[5px] items-center gap-1.5">
-              <span className="w-[4px] h-[4px] rounded-full bg-[#C9A55D]" />
-              <span className="text-[9.5px] uppercase tracking-[0.2em] font-semibold text-[#A3A3A3]">
-                India School Finder • IB • IGCSE • ICSE • CBSE
+              <span className="w-[4px] h-[4px] rounded-full bg-[#C9A55D] shrink-0" />
+              <span className="text-[9.5px] uppercase tracking-[0.14em] font-semibold text-[#8C8C8C] whitespace-nowrap">
+                India School Finder
               </span>
             </div>
           </div>
         </Link>
 
         {/* CENTER - Navigation Pills */}
-        <div className="hidden lg:flex items-center absolute left-1/2 -translate-x-1/2">
-          <div className="flex items-center gap-1.5 bg-white/70 border border-[#E7E1DD] rounded-full px-2.5 py-1.5 shadow-sm backdrop-blur-md">
+        <div className="hidden lg:flex items-center absolute left-1/2 -translate-x-1/2 z-10 w-max pointer-events-auto">
+          <div className="flex items-center gap-1 xl:gap-1.5 bg-white/80 border border-[#E7E1DD] rounded-full px-2 xl:px-2.5 py-1.5 shadow-sm backdrop-blur-md shrink-0">
             {navLinks.map((item) => {
               const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href) && !item.href.includes('?'));
               return (
                 <Link
                   key={item.label}
                   href={item.href}
-                  className={`px-4 h-[40px] rounded-full flex items-center gap-1.5 text-[14px] font-medium transition-all duration-300 cursor-pointer ${
+                  className={`px-3.5 xl:px-4 h-[40px] rounded-full flex items-center gap-1.5 text-[14px] font-medium transition-all duration-300 cursor-pointer whitespace-nowrap shrink-0 ${
                     isActive
                       ? 'bg-[#690B1B] text-white shadow-sm'
                       : 'text-[#5F5F5F] hover:bg-[#690B1B] hover:text-white'
                   }`}
                 >
-                  <span>{item.label}</span>
+                  <span className="whitespace-nowrap">{item.label}</span>
                   {item.badge !== undefined && (
-                    <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
+                    <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full whitespace-nowrap shrink-0 ${
                       isActive ? 'bg-white text-[#690B1B]' : 'bg-[#690B1B] text-white'
                     }`}>
                       {item.badge}
                     </span>
                   )}
                   {item.isHighlight && !isActive && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#C9A55D] animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#C9A55D] animate-pulse shrink-0" />
                   )}
                 </Link>
               );
@@ -95,7 +95,7 @@ export default function Navbar() {
         </div>
 
         {/* RIGHT - Shortlist & CTA */}
-        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0 relative z-10">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="lg:hidden p-2 text-[#111] focus:outline-none shrink-0"
@@ -107,7 +107,7 @@ export default function Navbar() {
           {/* Shortlist link */}
           <Link
             href="/schools?saved=true"
-            className="hidden md:flex items-center gap-1.5 text-[14px] font-medium text-[#5B5B5B] hover:text-[#690B1B] transition-colors whitespace-nowrap px-3 py-2 rounded-full hover:bg-black/5"
+            className="hidden xl:flex items-center gap-1.5 text-[14px] font-medium text-[#5B5B5B] hover:text-[#690B1B] transition-colors whitespace-nowrap px-3 py-2 rounded-full hover:bg-black/5"
             title="Saved Schools"
           >
             <BookmarkCheck className="w-4 h-4 text-[#C9A55D]" />

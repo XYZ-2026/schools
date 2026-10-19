@@ -7,13 +7,13 @@ import SchoolCard from '@/components/schools/SchoolCard';
 import { useSchool } from '@/context/SchoolContext';
 import { 
   Search, 
-  SlidersHorizontal, 
   RotateCcw, 
   MapPin, 
   GraduationCap, 
-  Building2, 
+  Layers,
   Sparkles,
-  BookmarkCheck
+  BookmarkCheck,
+  IndianRupee
 } from 'lucide-react';
 
 function SchoolsExplorerContent() {
@@ -23,21 +23,19 @@ function SchoolsExplorerContent() {
   // Initial values from URL search params
   const initialBoard = searchParams.get('board') || 'All';
   const initialCity = searchParams.get('city') || 'All';
-  const initialType = searchParams.get('type') || 'All';
   const initialQuery = searchParams.get('q') || '';
   const initialSavedOnly = searchParams.get('saved') === 'true';
 
   const [selectedBoard, setSelectedBoard] = useState<string>(initialBoard);
   const [selectedCity, setSelectedCity] = useState<string>(initialCity);
-  const [selectedType, setSelectedType] = useState<string>(initialType);
-  const [selectedGender, setSelectedGender] = useState<string>('All');
+  const [selectedGrade, setSelectedGrade] = useState<string>('All');
   const [feeBudget, setFeeBudget] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>(initialQuery);
-  const [sortBy, setSortBy] = useState<string>('rank');
+  const [sortBy, setSortBy] = useState<string>('name');
   const [onlySaved, setOnlySaved] = useState<boolean>(initialSavedOnly);
 
   // Available cities from data
-  const cities = ['All', 'Mumbai', 'Bengaluru', 'Gurugram', 'New Delhi', 'Dehradun', 'Mussoorie', 'Hyderabad', 'Noida', 'Ajmer'];
+  const cities = ['All', 'Mumbai', 'Bengaluru', 'Delhi NCR', 'Pune'];
 
   const filteredSchools = useMemo(() => {
     return SCHOOLS_DATA.filter((school) => {
@@ -45,8 +43,13 @@ function SchoolsExplorerContent() {
       if (onlySaved && !shortlist.includes(school.slug)) return false;
 
       // Board filter
-      if (selectedBoard !== 'All' && !school.boards.includes(selectedBoard as any)) {
-        return false;
+      if (selectedBoard !== 'All') {
+        const boardLower = school.board.toLowerCase();
+        const primaryLower = school.primaryBoard.toLowerCase();
+        const target = selectedBoard.toLowerCase();
+        if (!boardLower.includes(target) && !primaryLower.includes(target)) {
+          return false;
+        }
       }
 
       // City filter
@@ -54,49 +57,46 @@ function SchoolsExplorerContent() {
         return false;
       }
 
-      // Type filter
-      if (selectedType !== 'All') {
-        if (selectedType === 'Boarding' && !school.schoolType.includes('Boarding')) return false;
-        if (selectedType === 'Day School' && !school.schoolType.includes('Day')) return false;
-      }
-
-      // Gender filter
-      if (selectedGender !== 'All' && school.gender !== selectedGender) {
-        return false;
+      // Grade filter
+      if (selectedGrade !== 'All') {
+        if (!school.grades.toLowerCase().includes(selectedGrade.toLowerCase())) {
+          return false;
+        }
       }
 
       // Fee Budget filter
-      if (feeBudget === 'under5') {
-        if (school.annualFeeMin > 500000) return false;
-      } else if (feeBudget === '5to10') {
-        if (school.annualFeeMax < 500000 || school.annualFeeMin > 1000000) return false;
-      } else if (feeBudget === 'above10') {
-        if (school.annualFeeMax < 1000000) return false;
+      if (feeBudget === 'under3') {
+        if (school.feeMin > 300000 && school.feeMin !== 0) return false;
+      } else if (feeBudget === '3to7') {
+        if (school.feeMax < 300000 || school.feeMin > 700000) return false;
+      } else if (feeBudget === 'above7') {
+        if (school.feeMax < 700000) return false;
       }
 
       // Search Query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        const matchesName = school.name.toLowerCase().includes(q);
-        const matchesCity = school.city.toLowerCase().includes(q);
-        const matchesTagline = school.tagline.toLowerCase().includes(q);
-        const matchesBoards = school.boards.some((b) => b.toLowerCase().includes(q));
-        if (!matchesName && !matchesCity && !matchesTagline && !matchesBoards) return false;
+        const matchesName = school.schoolName.toLowerCase().includes(q);
+        const matchesBoard = school.board.toLowerCase().includes(q);
+        const matchesContact = school.contactDetails.toLowerCase().includes(q);
+        const matchesAlumni = school.notableAlumniAchievements.toLowerCase().includes(q);
+        const matchesPros = school.pros.toLowerCase().includes(q);
+        if (!matchesName && !matchesBoard && !matchesContact && !matchesAlumni && !matchesPros) {
+          return false;
+        }
       }
 
       return true;
     }).sort((a, b) => {
-      if (sortBy === 'rank') return a.rank - b.rank;
-      if (sortBy === 'rating') return b.rating - a.rating;
-      if (sortBy === 'feesLow') return a.annualFeeMin - b.annualFeeMin;
-      if (sortBy === 'feesHigh') return b.annualFeeMax - a.annualFeeMax;
+      if (sortBy === 'name') return a.schoolName.localeCompare(b.schoolName);
+      if (sortBy === 'feesLow') return a.feeMin - b.feeMin;
+      if (sortBy === 'feesHigh') return b.feeMax - a.feeMax;
       return 0;
     });
   }, [
     selectedBoard,
     selectedCity,
-    selectedType,
-    selectedGender,
+    selectedGrade,
     feeBudget,
     searchQuery,
     sortBy,
@@ -107,11 +107,10 @@ function SchoolsExplorerContent() {
   const resetFilters = () => {
     setSelectedBoard('All');
     setSelectedCity('All');
-    setSelectedType('All');
-    setSelectedGender('All');
+    setSelectedGrade('All');
     setFeeBudget('All');
     setSearchQuery('');
-    setSortBy('rank');
+    setSortBy('name');
     setOnlySaved(false);
   };
 
@@ -121,187 +120,177 @@ function SchoolsExplorerContent() {
       <div className="mb-8">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF0F2] text-[#690B1B] text-[12px] font-bold uppercase tracking-wider mb-2">
           <Sparkles className="w-3.5 h-3.5 text-[#C9A55D]" />
-          Directory & Comparison
+          Wix CMS Verified Database • {SCHOOLS_DATA.length} Schools
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-[#111] tracking-tight">
-          Explore Premier Schools in India
+          Explore Schools in India
         </h1>
-        <p className="mt-2 text-[15px] text-[#666] max-w-3xl">
-          Filter through elite IB World, Cambridge IGCSE, ICSE, and CBSE schools. Compare verified tuition brackets, campus amenities, faculty-student ratios, and admissions availability.
+        <p className="mt-2 text-[15px] text-[#666] max-w-2xl">
+          Search and compare verified schools across CBSE, ICSE, IB, and Cambridge IGCSE with accurate tuition fee ranges, curricula, and pros &amp; cons.
         </p>
       </div>
 
-      {/* Main Search & Filter Control Bar */}
-      <div className="bg-white rounded-2xl border border-[#E7E2DE] p-4 sm:p-5 shadow-sm mb-8 space-y-4">
-        {/* Top search input & sort */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-          {/* Keyword search input */}
-          <div className="relative w-full md:w-96">
-            <Search className="w-4 h-4 text-[#888] absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by school name, city, board..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#F6F4F2] border border-[#E7E1DD] text-[13.5px] text-[#111] placeholder-[#888] focus:outline-none focus:border-[#690B1B]"
-            />
-          </div>
-
-          {/* Quick options: Shortlist toggle & sort dropdown */}
-          <div className="flex items-center gap-2.5 w-full md:w-auto justify-between md:justify-end">
+      {/* Search & Filter Toolbar */}
+      <div className="bg-white rounded-2xl border border-[#E7E2DE] p-4 sm:p-6 shadow-xs mb-8">
+        {/* Main Search Input */}
+        <div className="relative mb-5">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#999]" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by school name, board (CBSE, IB, ICSE), location, or alumni..."
+            className="w-full h-12 pl-12 pr-4 rounded-xl bg-[#F6F4F2] border border-[#E7E1DD] text-[#111] placeholder:text-[#888] text-[14px] focus:outline-none focus:border-[#690B1B] focus:bg-white transition-all"
+          />
+          {searchQuery && (
             <button
-              onClick={() => setOnlySaved(!onlySaved)}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-semibold transition-colors cursor-pointer ${
-                onlySaved
-                  ? 'bg-[#C9A55D] text-white shadow-xs'
-                  : 'bg-[#F6F4F2] text-[#666] hover:bg-[#EFECE8]'
-              }`}
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[12px] font-semibold text-[#888] hover:text-[#111]"
             >
-              <BookmarkCheck className="w-4 h-4" />
-              <span>Saved Only ({shortlist.length})</span>
+              Clear
             </button>
-
-            <div className="flex items-center gap-2">
-              <span className="text-[12.5px] text-[#777] font-medium hidden sm:inline">Sort:</span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="bg-[#F6F4F2] border border-[#E7E1DD] text-[13px] font-semibold text-[#111] px-3 py-2 rounded-xl focus:outline-none cursor-pointer"
-              >
-                <option value="rank">National Rank (Top 1st)</option>
-                <option value="rating">Parent Rating (Highest)</option>
-                <option value="feesLow">Fees: Low to High</option>
-                <option value="feesHigh">Fees: High to Low</option>
-              </select>
-            </div>
-          </div>
+          )}
         </div>
 
-        {/* Board Pill Selector */}
-        <div className="pt-2 border-t border-[#F0EBE6] flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          <span className="text-[12px] font-bold text-[#888] uppercase tracking-wider mr-1 shrink-0 flex items-center gap-1">
-            <GraduationCap className="w-3.5 h-3.5 text-[#690B1B]" /> Board:
-          </span>
-          {['All', 'IB', 'IGCSE', 'ICSE', 'CBSE'].map((b) => (
-            <button
-              key={b}
-              onClick={() => setSelectedBoard(b)}
-              className={`px-3 py-1.5 rounded-lg text-[13px] font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                selectedBoard === b
-                  ? 'bg-[#690B1B] text-white shadow-xs'
-                  : 'bg-[#F6F4F2] text-[#666] hover:bg-[#EFECE8] hover:text-[#111]'
-              }`}
-            >
-              {b === 'All' ? 'All Curricula' : b}
-            </button>
-          ))}
-        </div>
-
-        {/* Secondary Filters Grid */}
-        <div className="pt-2 border-t border-[#F0EBE6] grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-[12.5px]">
-          {/* City */}
+        {/* Filter Dropdowns Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          {/* Board Filter */}
           <div>
-            <label className="block text-[11px] font-bold text-[#888] uppercase tracking-wider mb-1">
-              City / Region
+            <label className="text-[11px] font-bold uppercase tracking-wider text-[#777] mb-1 flex items-center gap-1">
+              <GraduationCap className="w-3 h-3 text-[#690B1B]" /> Curriculum
+            </label>
+            <select
+              value={selectedBoard}
+              onChange={(e) => setSelectedBoard(e.target.value)}
+              className="w-full h-10 px-3 rounded-lg bg-[#FAF8F5] border border-[#E7E1DD] text-[13px] text-[#222] font-medium focus:outline-none focus:border-[#690B1B]"
+            >
+              <option value="All">All Curricula</option>
+              <option value="CBSE">CBSE</option>
+              <option value="ICSE">ICSE / ISC</option>
+              <option value="IB">IB (PYP, MYP, DP)</option>
+              <option value="IGCSE">Cambridge IGCSE</option>
+            </select>
+          </div>
+
+          {/* City Filter */}
+          <div>
+            <label className="text-[11px] font-bold uppercase tracking-wider text-[#777] mb-1 flex items-center gap-1">
+              <MapPin className="w-3 h-3 text-[#690B1B]" /> City / Region
             </label>
             <select
               value={selectedCity}
               onChange={(e) => setSelectedCity(e.target.value)}
-              className="w-full bg-[#F6F4F2] border border-[#E7E1DD] px-2.5 py-2 rounded-xl font-medium text-[#222] focus:outline-none cursor-pointer"
+              className="w-full h-10 px-3 rounded-lg bg-[#FAF8F5] border border-[#E7E1DD] text-[13px] text-[#222] font-medium focus:outline-none focus:border-[#690B1B]"
             >
               {cities.map((c) => (
-                <option key={c} value={c}>{c === 'All' ? 'All Cities' : c}</option>
+                <option key={c} value={c}>{c === 'All' ? 'All Locations' : c}</option>
               ))}
             </select>
           </div>
 
-          {/* School Type */}
+          {/* Grades Filter */}
           <div>
-            <label className="block text-[11px] font-bold text-[#888] uppercase tracking-wider mb-1">
-              School Format
+            <label className="text-[11px] font-bold uppercase tracking-wider text-[#777] mb-1 flex items-center gap-1">
+              <Layers className="w-3 h-3 text-[#690B1B]" /> Grades
             </label>
             <select
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              className="w-full bg-[#F6F4F2] border border-[#E7E1DD] px-2.5 py-2 rounded-xl font-medium text-[#222] focus:outline-none cursor-pointer"
+              value={selectedGrade}
+              onChange={(e) => setSelectedGrade(e.target.value)}
+              className="w-full h-10 px-3 rounded-lg bg-[#FAF8F5] border border-[#E7E1DD] text-[13px] text-[#222] font-medium focus:outline-none focus:border-[#690B1B]"
             >
-              <option value="All">Day & Boarding</option>
-              <option value="Day School">Day School Only</option>
-              <option value="Boarding">Residential Boarding</option>
+              <option value="All">All Grades</option>
+              <option value="1-12">Grades 1-12</option>
+              <option value="PreK">Pre-K / Nursery</option>
+              <option value="6-12">Grades 6-12</option>
             </select>
           </div>
 
-          {/* Gender */}
+          {/* Annual Tuition Budget */}
           <div>
-            <label className="block text-[11px] font-bold text-[#888] uppercase tracking-wider mb-1">
-              Gender Format
-            </label>
-            <select
-              value={selectedGender}
-              onChange={(e) => setSelectedGender(e.target.value)}
-              className="w-full bg-[#F6F4F2] border border-[#E7E1DD] px-2.5 py-2 rounded-xl font-medium text-[#222] focus:outline-none cursor-pointer"
-            >
-              <option value="All">All Genders</option>
-              <option value="Co-educational">Co-educational</option>
-              <option value="All-Boys">All-Boys</option>
-              <option value="All-Girls">All-Girls</option>
-            </select>
-          </div>
-
-          {/* Budget */}
-          <div>
-            <label className="block text-[11px] font-bold text-[#888] uppercase tracking-wider mb-1">
-              Annual Fee Bracket
+            <label className="text-[11px] font-bold uppercase tracking-wider text-[#777] mb-1 flex items-center gap-1">
+              <IndianRupee className="w-3 h-3 text-[#690B1B]" /> Annual Fees
             </label>
             <select
               value={feeBudget}
               onChange={(e) => setFeeBudget(e.target.value)}
-              className="w-full bg-[#F6F4F2] border border-[#E7E1DD] px-2.5 py-2 rounded-xl font-medium text-[#222] focus:outline-none cursor-pointer"
+              className="w-full h-10 px-3 rounded-lg bg-[#FAF8F5] border border-[#E7E1DD] text-[13px] text-[#222] font-medium focus:outline-none focus:border-[#690B1B]"
             >
               <option value="All">Any Budget</option>
-              <option value="under5">Under ₹5 Lakhs / yr</option>
-              <option value="5to10">₹5 Lakhs – ₹10 Lakhs / yr</option>
-              <option value="above10">Above ₹10 Lakhs / yr</option>
+              <option value="under3">Under ₹3,00,000</option>
+              <option value="3to7">₹3,00,000 - ₹7,00,000</option>
+              <option value="above7">Above ₹7,00,000</option>
             </select>
           </div>
+
+          {/* Sort By */}
+          <div className="col-span-2 sm:col-span-1">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-[#777] mb-1 block">
+              Sort By
+            </label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="w-full h-10 px-3 rounded-lg bg-[#FAF8F5] border border-[#E7E1DD] text-[13px] text-[#222] font-medium focus:outline-none focus:border-[#690B1B]"
+            >
+              <option value="name">Name (A-Z)</option>
+              <option value="feesLow">Fees: Low to High</option>
+              <option value="feesHigh">Fees: High to Low</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Filter Pills and Reset Button */}
+        <div className="mt-4 pt-4 border-t border-[#F0EBE6] flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setOnlySaved(!onlySaved)}
+              className={`px-3 py-1 rounded-full text-[12px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                onlySaved
+                  ? 'bg-[#C9A55D] text-white shadow-xs'
+                  : 'bg-[#FAF8F5] text-[#555] hover:bg-[#F2ECE6] border border-[#E7E1DD]'
+              }`}
+            >
+              <BookmarkCheck className="w-3.5 h-3.5" />
+              <span>Saved Schools ({shortlist.length})</span>
+            </button>
+          </div>
+
+          <button
+            onClick={resetFilters}
+            className="text-[12px] text-[#888] hover:text-[#690B1B] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Reset All Filters</span>
+          </button>
         </div>
       </div>
 
       {/* Results Header */}
       <div className="flex items-center justify-between mb-6">
-        <div className="text-[14px] text-[#555]">
-          Showing <strong className="text-[#111] font-bold">{filteredSchools.length}</strong> premier institutions in India
-        </div>
-        {(selectedBoard !== 'All' || selectedCity !== 'All' || selectedType !== 'All' || selectedGender !== 'All' || feeBudget !== 'All' || searchQuery.trim() || onlySaved) && (
-          <button
-            onClick={resetFilters}
-            className="flex items-center gap-1.5 text-[12.5px] font-bold text-[#690B1B] hover:underline cursor-pointer"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset All Filters</span>
-          </button>
-        )}
+        <h2 className="text-[15px] font-semibold text-[#555]">
+          Showing <span className="font-bold text-[#111]">{filteredSchools.length}</span> of {SCHOOLS_DATA.length} verified schools
+        </h2>
       </div>
 
-      {/* Grid of Results */}
+      {/* Schools Card Grid */}
       {filteredSchools.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredSchools.map((school) => (
             <SchoolCard key={school.id} school={school} />
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-[#E7E2DE] p-12 text-center max-w-xl mx-auto my-8">
-          <div className="w-12 h-12 rounded-full bg-[#FAF0F2] text-[#690B1B] flex items-center justify-center mx-auto mb-4">
+        <div className="bg-white rounded-2xl border border-[#E7E2DE] p-12 text-center max-w-lg mx-auto">
+          <div className="w-12 h-12 rounded-full bg-[#FAF0F2] text-[#690B1B] flex items-center justify-center mx-auto mb-3">
             <Search className="w-6 h-6" />
           </div>
-          <h3 className="text-[18px] font-bold text-[#111]">No matching schools found</h3>
-          <p className="mt-1 text-[14px] text-[#666]">
-            Try clearing some filters or searching with broader keywords to discover institutions.
+          <h3 className="text-[18px] font-bold text-[#111]">No Matching Schools Found</h3>
+          <p className="mt-1 text-[13px] text-[#666]">
+            Try relaxing your search terms or resetting filters to browse all verified schools.
           </p>
           <button
             onClick={resetFilters}
-            className="mt-5 px-6 py-2.5 rounded-full bg-[#690B1B] text-white text-[13px] font-bold hover:bg-[#7A1022] transition-colors"
+            className="mt-4 px-4 py-2 rounded-full bg-[#690B1B] text-white text-[13px] font-bold hover:bg-[#7A1022] transition-colors"
           >
             Reset All Filters
           </button>
@@ -313,7 +302,7 @@ function SchoolsExplorerContent() {
 
 export default function SchoolsPage() {
   return (
-    <Suspense fallback={<div className="p-12 text-center text-[#777]">Loading Schools Directory...</div>}>
+    <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-20 text-center">Loading Schools Directory...</div>}>
       <SchoolsExplorerContent />
     </Suspense>
   );
