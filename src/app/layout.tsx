@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { AuthProvider } from '@/context/AuthContext';
 import { SchoolProvider } from '@/context/SchoolContext';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -70,15 +71,17 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <body className="bg-white text-[#080F1C] min-h-screen flex flex-col antialiased font-[Inter]">
-        <SchoolProvider>
-          <Navbar />
-          <main className="flex-1">
-            {children}
-          </main>
-          <CompareDrawer />
-          <SchoolDetailModal />
-          <Footer />
-        </SchoolProvider>
+        <AuthProvider>
+          <SchoolProvider>
+            <Navbar />
+            <main className="flex-1">
+              {children}
+            </main>
+            <CompareDrawer />
+            <SchoolDetailModal />
+            <Footer />
+          </SchoolProvider>
+        </AuthProvider>
       </body>
     </html>
   );

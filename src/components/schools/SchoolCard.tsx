@@ -156,40 +156,41 @@ export default function SchoolCard({ school }: SchoolCardProps) {
       </div>
 
       {/* Card Footer Actions */}
-      <div className="px-3.5 sm:px-5 pb-3.5 sm:pb-4 pt-2 border-t border-[#E4E7EC] flex items-center justify-between gap-2">
-        {/* Compare Checkbox */}
+      <div className="px-4 sm:px-5 py-3.5 border-t border-[#E4E7EC] flex items-center justify-between gap-3 mt-auto bg-white">
+        {/* Compare Checkbox Button */}
         <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             toggleCompare(school.slug);
           }}
-          className={`text-[12px] font-semibold flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer ${
+          className={`h-9 px-3 text-[12px] font-semibold flex items-center gap-1.5 rounded-xl transition-all cursor-pointer shrink-0 ${
             comparing
-              ? 'bg-[#2563EB] text-white'
-              : 'text-[#667085] hover:bg-[#E8F0FF] hover:text-[#2563EB]'
+              ? 'bg-[#2563EB] text-white shadow-xs'
+              : 'bg-[#F8FAFC] border border-[#E2E8F0] text-[#64748B] hover:bg-[#E8F0FF] hover:text-[#2563EB] hover:border-[#BFDBFE]'
           }`}
         >
-          <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${
-            comparing ? 'border-white bg-[#2563EB]' : 'border-[#AAA] bg-white'
+          <span className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 ${
+            comparing ? 'border-white bg-[#2563EB]' : 'border-[#CBD5E1] bg-white'
           }`}>
-            {comparing && <Check className="w-2.5 h-2.5 text-white" />}
+            {comparing && <Check className="w-3 h-3 text-white" />}
           </span>
-          <span>{comparing ? 'In Compare' : 'Compare'}</span>
+          <span className="whitespace-nowrap">{comparing ? 'In Compare' : 'Compare'}</span>
         </button>
 
-        {/* View Profile */}
-        <a
-          href={`/schools/${school.slug}`}
+        {/* View Profile Button */}
+        <button
+          type="button"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             openSchoolModal(school.slug);
           }}
-          className="text-[12.5px] font-bold text-[#2563EB] hover:text-[#1D4ED8] flex items-center gap-1 group/btn cursor-pointer"
+          className="h-9 px-2 text-[12.5px] font-bold text-[#2563EB] hover:text-[#1D4ED8] flex items-center gap-1 group/btn cursor-pointer shrink-0 whitespace-nowrap"
         >
           <span>View Profile</span>
           <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
-        </a>
+        </button>
       </div>
     </div>
   );

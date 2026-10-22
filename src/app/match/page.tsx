@@ -18,6 +18,7 @@ import {
   Award,
   ArrowRight
 } from 'lucide-react';
+import AuthGuard from '@/components/auth/AuthGuard';
 
 interface Question {
   id: number;
@@ -135,7 +136,7 @@ const QUESTIONS: Question[] = [
   }
 ];
 
-export default function MatcherPage() {
+function MatcherContent() {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [isCalculating, setIsCalculating] = useState(false);
@@ -423,5 +424,13 @@ export default function MatcherPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MatcherPage() {
+  return (
+    <AuthGuard fallbackUrl="/auth">
+      <MatcherContent />
+    </AuthGuard>
   );
 }

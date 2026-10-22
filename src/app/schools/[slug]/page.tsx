@@ -2,11 +2,7 @@ import { notFound, redirect } from 'next/navigation';
 import { Metadata } from 'next';
 import { SCHOOLS_DATA } from '@/data/schoolsData';
 
-export function generateStaticParams() {
-  return SCHOOLS_DATA.slice(0, 50).map((school) => ({
-    slug: school.slug,
-  }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
@@ -40,5 +36,5 @@ export default async function SchoolPage({
     notFound();
   }
 
-  redirect(`/schools?school=${slug}`);
+  redirect(`/schools?school=${encodeURIComponent(slug)}`);
 }
