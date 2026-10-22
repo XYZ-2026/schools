@@ -16,7 +16,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://schoolssimplified.in'),
+  metadataBase: new URL('https://schools.clarvo.in'),
   title: {
     default: 'CLARVO — Find The Perfect School in India | IB, IGCSE, ICSE, CBSE',
     template: '%s | CLARVO',

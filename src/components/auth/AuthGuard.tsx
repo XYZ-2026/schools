@@ -27,8 +27,8 @@ export default function AuthGuard({ children, fallbackUrl = '/auth' }: AuthGuard
         <div className="relative w-14 h-14">
           <div className="w-14 h-14 rounded-full border-4 border-[#E8F0FF] border-t-[#2563EB] animate-spin" />
         </div>
-        <p className="mt-4 text-[#080F1C] font-bold text-[15px]">Verifying parent account...</p>
-        <p className="text-[#667085] text-[13px] mt-1">Please wait while we secure your admissions session</p>
+        <p className="mt-4 text-[#080F1C] font-bold text-[15px]">Verifying account...</p>
+        <p className="text-[#667085] text-[13px] mt-1">Please wait while we secure your session</p>
       </div>
     );
   }

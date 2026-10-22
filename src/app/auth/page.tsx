@@ -118,18 +118,18 @@ function AuthContent() {
                 CLARVO
               </span>
               <span className="text-[9px] uppercase tracking-[0.16em] font-bold text-[#2563EB]">
-                Parent Portal
+                Account Portal
               </span>
             </div>
           </Link>
 
           <h1 className="mt-5 text-[24px] sm:text-[26px] font-extrabold text-[#080F1C] tracking-tight">
-            {mode === 'signin' ? 'Welcome Back, Parent' : 'Start Your Admissions Journey'}
+            {mode === 'signin' ? 'Welcome Back' : 'Create Your Account'}
           </h1>
           <p className="mt-1.5 text-[13.5px] text-[#667085]">
             {mode === 'signin'
-              ? 'Access child fit assessments, saved shortlists & applications'
-              : 'Create your parent account to unlock AI Matcher & verified school data'}
+              ? 'Access school assessments, saved shortlists & applications'
+              : 'Sign up to unlock AI School Matcher & verified school data'}
           </p>
         </div>
 
@@ -218,7 +218,7 @@ function AuthContent() {
             {mode === 'signup' && (
               <div>
                 <label className="block text-[11.5px] font-bold uppercase tracking-wider text-[#64748B] mb-1.5">
-                  Parent / Guardian Name
+                  Full Name
                 </label>
                 <div className="relative">
                   <User className="w-4 h-4 text-[#94A3B8] absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -245,7 +245,7 @@ function AuthContent() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="parent@example.com"
+                  placeholder="name@example.com"
                   className="w-full h-11 pl-10 pr-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-[13.5px] text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#2563EB] focus:bg-white transition-all font-medium"
                 />
               </div>
@@ -298,7 +298,7 @@ function AuthContent() {
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  <span>{mode === 'signin' ? 'Sign In to Portal' : 'Create Parent Account'}</span>
+                  <span>{mode === 'signin' ? 'Sign In' : 'Create Account'}</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -308,7 +308,7 @@ function AuthContent() {
           {/* Privacy Security Notice */}
           <div className="mt-6 pt-5 border-t border-[#F1F5F9] flex items-center justify-center gap-2 text-[12px] text-[#94A3B8]">
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span>100% Confidential Parent Advisory Privacy</span>
+            <span>100% Secure &amp; Confidential Data Privacy</span>
           </div>
         </div>
 
@@ -328,7 +328,7 @@ function AuthContent() {
           </div>
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />
-            <span>Direct admission desks</span>
+            <span>Direct school admissions info</span>
           </div>
         </div>
       </div>

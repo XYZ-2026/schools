@@ -89,7 +89,8 @@ if [ "$SUCCESS" = true ]; then
     echo -e "Container Name : clarvo-web-app"
     echo -e "Host Port      : ${APP_PORT} (Internal: 3000)"
     echo -e "Local Access   : http://127.0.0.1:${APP_PORT}"
-    echo -e "VPS Access     : http://<YOUR_VPS_IP>:${APP_PORT}"
+    echo -e "VPS IP Access  : http://<YOUR_VPS_IP>:${APP_PORT}"
+    echo -e "Live Domain    : https://schools.clarvo.in"
     echo -e ""
     echo -e "${BLUE}To view logs, run:${NC} ${COMPOSE_CMD} logs -f"
 else
