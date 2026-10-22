@@ -26,8 +26,8 @@ const FAQS: FaqItem[] = [
     answer: 'For elite international and boarding schools, applications typically open between July and September of the preceding year (e.g., Autumn 2025 for 2026-27 entry). High-demand schools like DAIS, Doon, and TISB conduct entrance assessments between October and January. Late applications after February usually compete for limited waitlist slots.'
   },
   {
-    question: 'Does Schools Simplified provide direct admission or campus tour booking?',
-    answer: 'Schools Simplified acts as an independent advisory and comparison portal. Through our direct school profile inquiry modals, your verified details are forwarded directly to the school\'s admissions desk to schedule campus tours, receive official prospectus kits, and get assessment dates.'
+    question: 'Does CLARVO provide direct admission or campus tour booking?',
+    answer: 'CLARVO acts as an independent advisory and comparison portal. Through our direct school profile inquiry modals, your verified details are forwarded directly to the school\'s admissions desk to schedule campus tours, receive official prospectus kits, and get assessment dates.'
   }
 ];
 
@@ -37,13 +37,13 @@ export default function FaqSection() {
   return (
     <section className="py-16 sm:py-24 max-w-4xl mx-auto px-4 sm:px-6">
       <div className="text-center mb-12">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FAF0F2] border border-[#F0D5DA] text-[#690B1B] text-[12px] font-bold uppercase tracking-wider mb-3">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E8F0FF] border border-[#93C5FD]/40 text-[#2563EB] text-[12px] font-bold uppercase tracking-wider mb-3">
           Parent Advisory
         </div>
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#111] tracking-tight">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#080F1C] tracking-tight">
           Frequently Asked Questions
         </h2>
-        <p className="mt-3 text-[15px] text-[#666] max-w-xl mx-auto">
+        <p className="mt-3 text-[15px] text-[#667085] max-w-xl mx-auto">
           Essential answers for parents navigating school selection, board choices, and admissions in India.
         </p>
       </div>
@@ -56,25 +56,25 @@ export default function FaqSection() {
               key={index}
               className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
                 isOpen
-                  ? 'bg-white border-[#690B1B]/40 shadow-[0_8px_24px_rgba(105,11,27,0.06)]'
-                  : 'bg-white/80 border-[#E7E2DE] hover:border-[#690B1B]/20'
+                  ? 'bg-white border-[#2563EB]/40 shadow-[0_8px_24px_rgba(37,99,235,0.06)]'
+                  : 'bg-white/80 border-[#E4E7EC] hover:border-[#2563EB]/20'
               }`}
             >
               <button
                 onClick={() => setOpenIndex(isOpen ? null : index)}
-                className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-semibold text-[15px] sm:text-[16px] text-[#111]"
+                className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-semibold text-[15px] sm:text-[16px] text-[#080F1C]"
               >
                 <span>{faq.question}</span>
                 <div
                   className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300 ${
-                    isOpen ? 'rotate-180 bg-[#690B1B] text-white' : 'bg-[#F6F4F2] text-[#666]'
+                    isOpen ? 'rotate-180 bg-[#2563EB] text-white' : 'bg-[#F8FAFC] text-[#667085]'
                   }`}
                 >
                   <ChevronDown className="w-4 h-4" />
                 </div>
               </button>
               {isOpen && (
-                <div className="px-4 sm:px-5 pb-5 text-[14px] leading-relaxed text-[#555] border-t border-[#F5EFEA] pt-3">
+                <div className="px-4 sm:px-5 pb-5 text-[14px] leading-relaxed text-[#344054] border-t border-[#E4E7EC] pt-3">
                   {faq.answer}
                 </div>
               )}

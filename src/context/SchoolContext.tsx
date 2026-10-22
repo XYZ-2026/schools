@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { School } from '@/types/school';
 import { SCHOOLS_DATA } from '@/data/schoolsData';
 
@@ -14,20 +14,35 @@ interface SchoolContextType {
   toggleShortlist: (slug: string) => void;
   isInShortlist: (slug: string) => boolean;
   getSchoolBySlug: (slug: string) => School | undefined;
+  activeSchoolSlug: string | null;
+  openSchoolModal: (slug: string) => void;
+  closeSchoolModal: () => void;
 }
 
 const SchoolContext = createContext<SchoolContextType | undefined>(undefined);
 
 export function SchoolProvider({ children }: { children: React.ReactNode }) {
-  const [compareList, setCompareList] = useState<string[]>(['dhirubhai-ambani-international-school', 'oberoi-international-school']);
+  const [compareList, setCompareList] = useState<string[]>([]);
   const [shortlist, setShortlist] = useState<string[]>([]);
+  const [activeSchoolSlug, setActiveSchoolSlug] = useState<string | null>(null);
+  const previousPathRef = useRef<string | null>(null);
 
   useEffect(() => {
     try {
       const savedCompare = localStorage.getItem('schools_compare');
       if (savedCompare) {
         const parsed = JSON.parse(savedCompare);
-        if (Array.isArray(parsed) && parsed.length > 0) setCompareList(parsed);
+        // If the saved compare list is just the old hardcoded 2 default schools, clear it
+        const isLegacyDefault = Array.isArray(parsed) &&
+          parsed.length === 2 &&
+          parsed.includes('dhirubhai-ambani-international-school') &&
+          parsed.includes('oberoi-international-school');
+
+        if (isLegacyDefault) {
+          localStorage.removeItem('schools_compare');
+        } else if (Array.isArray(parsed)) {
+          setCompareList(parsed);
+        }
       }
       const savedShortlist = localStorage.getItem('schools_shortlist');
       if (savedShortlist) {
@@ -38,6 +53,49 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
       // Ignore localStorage errors
     }
   }, []);
+
+  // Listen for browser Back/Forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      if (activeSchoolSlug) {
+        setActiveSchoolSlug(null);
+        previousPathRef.current = null;
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [activeSchoolSlug]);
+
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    if (activeSchoolSlug) {
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prevOverflow;
+      };
+    }
+  }, [activeSchoolSlug]);
+
+  const openSchoolModal = (slug: string) => {
+    setActiveSchoolSlug(slug);
+    if (typeof window !== 'undefined') {
+      if (!previousPathRef.current) {
+        previousPathRef.current = window.location.pathname + window.location.search;
+      }
+      // Update the URL so the slug dynamically changes
+      window.history.pushState({ modalOpen: true, slug }, '', `/schools/${slug}`);
+    }
+  };
+
+  const closeSchoolModal = () => {
+    setActiveSchoolSlug(null);
+    if (typeof window !== 'undefined') {
+      const returnPath = previousPathRef.current || '/schools';
+      previousPathRef.current = null;
+      window.history.pushState(null, '', returnPath);
+    }
+  };
 
   const toggleCompare = (slug: string) => {
     setCompareList((prev) => {
@@ -103,6 +161,9 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
         toggleShortlist,
         isInShortlist,
         getSchoolBySlug,
+        activeSchoolSlug,
+        openSchoolModal,
+        closeSchoolModal,
       }}
     >
       {children}

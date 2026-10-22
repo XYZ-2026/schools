@@ -1,7 +1,6 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { Metadata } from 'next';
 import { SCHOOLS_DATA } from '@/data/schoolsData';
-import SchoolDetailClient from '@/components/schools/SchoolDetailClient';
 
 export function generateStaticParams() {
   return SCHOOLS_DATA.slice(0, 50).map((school) => ({
@@ -19,12 +18,12 @@ export async function generateMetadata({
 
   if (!school) {
     return {
-      title: 'School Not Found | Schools Simplified',
+      title: 'School Not Found | CLARVO',
     };
   }
 
   return {
-    title: `${school.schoolName} — Board, Fees, Pros & Alumni | Schools Simplified`,
+    title: `${school.schoolName} — Board, Fees, Pros & Alumni | CLARVO`,
     description: `${school.schoolName} offers ${school.board} curriculum for grades ${school.grades}. Approx Annual Fees: ${school.approxAnnualFeesInr}. Contact: ${school.contactDetails}`,
   };
 }
@@ -41,5 +40,5 @@ export default async function SchoolPage({
     notFound();
   }
 
-  return <SchoolDetailClient school={school} />;
+  redirect(`/schools?school=${slug}`);
 }

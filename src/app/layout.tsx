@@ -1,23 +1,24 @@
 import type { Metadata } from 'next';
-import { Poppins } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import './globals.css';
 import { SchoolProvider } from '@/context/SchoolContext';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import CompareDrawer from '@/components/schools/CompareDrawer';
+import SchoolDetailModal from '@/components/schools/SchoolDetailModal';
 
-const poppins = Poppins({
+const inter = Inter({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-poppins',
+  weight: ['400', '500', '600', '700', '800', '900'],
+  variable: '--font-inter',
   display: 'swap',
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://schoolssimplified.in'),
   title: {
-    default: 'Schools Simplified — Find The Perfect School in India | IB, IGCSE, ICSE, CBSE',
-    template: '%s | Schools Simplified',
+    default: 'CLARVO — Find The Perfect School in India | IB, IGCSE, ICSE, CBSE',
+    template: '%s | CLARVO',
   },
   description:
     'Discover and compare India\'s best schools across IB World, Cambridge IGCSE, ICSE, and CBSE boards. Compare tuition fees, student-teacher ratios, boarding amenities, and Ivy League college placements.',
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
     'school fee comparison'
   ],
   openGraph: {
-    siteName: 'Schools Simplified',
+    siteName: 'CLARVO',
     type: 'website',
     locale: 'en_IN',
     images: [
@@ -42,7 +43,7 @@ export const metadata: Metadata = {
         url: '/logo.png',
         width: 512,
         height: 512,
-        alt: 'Schools Simplified Logo',
+        alt: 'CLARVO Logo',
       },
     ],
   },
@@ -52,8 +53,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/logo.svg', type: 'image/svg+xml' },
-      { url: '/logo.png', type: 'image/png' },
+      { url: '/favicon.png', type: 'image/png' },
+      { url: '/favicon.ico' },
+    ],
+    apple: [
+      { url: '/favicon.png', type: 'image/png' },
     ],
   },
 };
@@ -64,14 +68,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={poppins.variable} suppressHydrationWarning>
-      <body className="bg-[#F6F4F2] text-[#111111] min-h-screen flex flex-col antialiased font-[Poppins]">
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
+      <body className="bg-white text-[#080F1C] min-h-screen flex flex-col antialiased font-[Inter]">
         <SchoolProvider>
           <Navbar />
           <main className="flex-1">
             {children}
           </main>
           <CompareDrawer />
+          <SchoolDetailModal />
           <Footer />
         </SchoolProvider>
       </body>

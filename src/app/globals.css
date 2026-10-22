@@ -1,16 +1,35 @@
 @import "tailwindcss";
 
 :root {
-  --background: #F6F4F2;
-  --foreground: #111111;
+  /* CLARVO Brand — Primary */
+  --brand-primary: #2563EB;
+  --brand-primary-hover: #1D4ED8;
+  --brand-primary-light: #E8F0FF;
+  --brand-focus: #93C5FD;
+
+  /* CLARVO Brand — Neutrals */
+  --background: #FFFFFF;
+  --foreground: #080F1C;
   --surface: #FFFFFF;
-  --surface-subtle: #F7F5F3;
-  --border: #E7E2DE;
-  --border-subtle: #F0EBE6;
-  --muted: #5F5F5F;
-  --accent: #690B1B;
-  --accent-hover: #7A1022;
-  --accent-gold: #C9A55D;
+  --surface-subtle: #F8FAFC;
+  --border: #E4E7EC;
+  --border-subtle: #F0F2F5;
+
+  /* CLARVO Brand — Text */
+  --text-primary: #080F1C;
+  --text-secondary: #667085;
+  --text-body: #344054;
+  --muted: #667085;
+
+  /* CLARVO Brand — Semantic */
+  --success: #16A34A;
+  --warning: #D97706;
+  --error: #DC2626;
+
+  /* CLARVO Brand — Legacy compat */
+  --accent: #2563EB;
+  --accent-hover: #1D4ED8;
+  --accent-gold: #2563EB;
 }
 
 *,
@@ -28,7 +47,7 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-poppins), 'Poppins', sans-serif;
+  font-family: 'Inter', var(--font-inter), sans-serif;
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
   min-height: 100vh;
@@ -48,7 +67,7 @@ body {
 
 /* Glassmorphism and brand shadows */
 .shadow-brand {
-  box-shadow: 0 10px 25px rgba(105, 11, 27, 0.18);
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.18);
 }
 
 .shadow-card {
@@ -56,5 +75,5 @@ body {
 }
 
 .shadow-hover {
-  box-shadow: 0 12px 30px rgba(105, 11, 27, 0.12);
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.12);
 }

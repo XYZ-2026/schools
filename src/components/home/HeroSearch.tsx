@@ -24,28 +24,28 @@ export default function HeroSearch() {
   return (
     <form
       onSubmit={handleSearch}
-      className="w-full max-w-4xl mx-auto bg-white/95 backdrop-blur-xl border border-[#E7E2DE] shadow-[0_16px_45px_rgba(105,11,27,0.12)] rounded-3xl p-3 sm:p-4 transition-all"
+      className="w-full max-w-4xl mx-auto bg-white/95 backdrop-blur-xl border border-[#E4E7EC] shadow-[0_16px_45px_rgba(37,99,235,0.10)] rounded-3xl p-3 sm:p-4 transition-all"
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
         {/* Keyword Search */}
-        <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-[#F6F4F2] border border-[#E7E1DD] hover:border-[#690B1B]/40 transition-colors">
-          <Search className="w-4 h-4 text-[#690B1B] shrink-0" />
+        <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-[#F8FAFC] border border-[#E4E7EC] hover:border-[#2563EB]/40 transition-colors">
+          <Search className="w-4 h-4 text-[#2563EB] shrink-0" />
           <input
             type="text"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             placeholder="Search school name..."
-            className="w-full bg-transparent text-[13.5px] font-medium text-[#111] placeholder-[#888] focus:outline-none"
+            className="w-full bg-transparent text-[13.5px] font-medium text-[#080F1C] placeholder-[#667085] focus:outline-none"
           />
         </div>
 
         {/* Board Select */}
-        <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-[#F6F4F2] border border-[#E7E1DD] hover:border-[#690B1B]/40 transition-colors">
-          <GraduationCap className="w-4 h-4 text-[#690B1B] shrink-0" />
+        <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-[#F8FAFC] border border-[#E4E7EC] hover:border-[#2563EB]/40 transition-colors">
+          <GraduationCap className="w-4 h-4 text-[#2563EB] shrink-0" />
           <select
             value={board}
             onChange={(e) => setBoard(e.target.value)}
-            className="w-full bg-transparent text-[13.5px] font-medium text-[#111] focus:outline-none cursor-pointer"
+            className="w-full bg-transparent text-[13.5px] font-medium text-[#080F1C] focus:outline-none cursor-pointer"
           >
             <option value="">All Curricula (IB, IGCSE...)</option>
             <option value="IB">IB World School</option>
@@ -56,12 +56,12 @@ export default function HeroSearch() {
         </div>
 
         {/* City Select */}
-        <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-[#F6F4F2] border border-[#E7E1DD] hover:border-[#690B1B]/40 transition-colors">
-          <MapPin className="w-4 h-4 text-[#690B1B] shrink-0" />
+        <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-[#F8FAFC] border border-[#E4E7EC] hover:border-[#2563EB]/40 transition-colors">
+          <MapPin className="w-4 h-4 text-[#2563EB] shrink-0" />
           <select
             value={city}
             onChange={(e) => setCity(e.target.value)}
-            className="w-full bg-transparent text-[13.5px] font-medium text-[#111] focus:outline-none cursor-pointer"
+            className="w-full bg-transparent text-[13.5px] font-medium text-[#080F1C] focus:outline-none cursor-pointer"
           >
             <option value="">All Cities / Regions</option>
             <option value="Mumbai">Mumbai</option>
@@ -76,12 +76,12 @@ export default function HeroSearch() {
         </div>
 
         {/* School Type Select */}
-        <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-[#F6F4F2] border border-[#E7E1DD] hover:border-[#690B1B]/40 transition-colors">
-          <Building2 className="w-4 h-4 text-[#690B1B] shrink-0" />
+        <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-[#F8FAFC] border border-[#E4E7EC] hover:border-[#2563EB]/40 transition-colors">
+          <Building2 className="w-4 h-4 text-[#2563EB] shrink-0" />
           <select
             value={schoolType}
             onChange={(e) => setSchoolType(e.target.value)}
-            className="w-full bg-transparent text-[13.5px] font-medium text-[#111] focus:outline-none cursor-pointer"
+            className="w-full bg-transparent text-[13.5px] font-medium text-[#080F1C] focus:outline-none cursor-pointer"
           >
             <option value="">Day vs Boarding</option>
             <option value="Day School">Day School</option>
@@ -92,15 +92,15 @@ export default function HeroSearch() {
       </div>
 
       {/* Submit Button Row */}
-      <div className="mt-3 pt-3 border-t border-[#F0EBE6] flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-[12px] text-[#777]">
+      <div className="mt-3 pt-3 border-t border-[#E4E7EC] flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-[12px] text-[#667085]">
           <span className="w-2 h-2 rounded-full bg-emerald-500" />
           <span>Showing 2026-27 admission dates, fees & student-teacher ratios</span>
         </div>
 
         <button
           type="submit"
-          className="w-full sm:w-auto h-[44px] px-7 rounded-full bg-[#690B1B] hover:bg-[#7A1022] text-white text-[14px] font-bold shadow-[0_8px_20px_rgba(105,11,27,0.22)] flex items-center justify-center gap-2 transition-all hover:scale-[1.02] cursor-pointer"
+          className="w-full sm:w-auto h-[44px] px-7 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[14px] font-bold shadow-[0_8px_20px_rgba(37,99,235,0.22)] flex items-center justify-center gap-2 transition-all hover:scale-[1.02] cursor-pointer"
         >
           <span>Find Schools</span>
           <ArrowRight className="w-4 h-4" />

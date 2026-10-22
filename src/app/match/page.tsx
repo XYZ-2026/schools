@@ -89,7 +89,7 @@ const QUESTIONS: Question[] = [
   {
     id: 3,
     title: 'What is your annual tuition budget expectation?',
-    subtitle: 'Schools Simplified features verified fee structures across every bracket.',
+    subtitle: 'CLARVO features verified fee structures across every bracket.',
     options: [
       {
         label: 'Affordable / Moderate (Under ₹3,00,000 / year)',
@@ -141,7 +141,7 @@ export default function MatcherPage() {
   const [isCalculating, setIsCalculating] = useState(false);
   const [completed, setCompleted] = useState(false);
 
-  const { toggleCompare, isInCompare } = useSchool();
+  const { toggleCompare, isInCompare, openSchoolModal } = useSchool();
 
   const handleSelectOption = (optionIndex: number) => {
     const updatedAnswers = [...answers];
@@ -214,31 +214,31 @@ export default function MatcherPage() {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
       {/* Header */}
       <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF0F2] text-[#690B1B] text-[12px] font-bold uppercase tracking-wider mb-2">
-          <Sparkles className="w-3.5 h-3.5 text-[#C9A55D]" />
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E8F0FF] text-[#2563EB] text-[12px] font-bold uppercase tracking-wider mb-2">
+          <Sparkles className="w-3.5 h-3.5 text-[#2563EB]" />
           Intelligent Recommendation Engine
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#111] tracking-tight">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight">
           Find Your Child's Ideal School &amp; Board
         </h1>
-        <p className="mt-2 text-[15px] text-[#666] max-w-xl mx-auto">
+        <p className="mt-2 text-[15px] text-[#64748B] max-w-xl mx-auto">
           Takes under 60 seconds. We analyze your academic vision, target university timeline, and family values.
         </p>
       </div>
 
       {!completed && !isCalculating ? (
-        <div className="bg-white rounded-3xl border border-[#E7E2DE] p-6 sm:p-10 shadow-xs relative overflow-hidden">
+        <div className="bg-white rounded-3xl border border-[#E2E8F0] p-6 sm:p-10 shadow-xs relative overflow-hidden">
           {/* Progress Bar */}
           <div className="mb-8">
-            <div className="flex items-center justify-between text-[12px] font-bold text-[#888] uppercase tracking-wider mb-2">
+            <div className="flex items-center justify-between text-[12px] font-bold text-[#64748B] uppercase tracking-wider mb-2">
               <span>Question {currentStep + 1} of {QUESTIONS.length}</span>
-              <span className="text-[#690B1B]">
+              <span className="text-[#2563EB]">
                 {Math.round(((currentStep + 1) / QUESTIONS.length) * 100)}% Complete
               </span>
             </div>
-            <div className="w-full h-2 bg-[#F0EBE6] rounded-full overflow-hidden">
+            <div className="w-full h-2 bg-[#F1F5F9] rounded-full overflow-hidden">
               <div
-                className="h-full bg-[#690B1B] transition-all duration-300"
+                className="h-full bg-[#2563EB] transition-all duration-300"
                 style={{ width: `${((currentStep + 1) / QUESTIONS.length) * 100}%` }}
               />
             </div>
@@ -246,10 +246,10 @@ export default function MatcherPage() {
 
           {/* Current Question */}
           <div className="mb-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#111]">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#0F172A]">
               {QUESTIONS[currentStep].title}
             </h2>
-            <p className="mt-1 text-[14px] text-[#666]">
+            <p className="mt-1 text-[14px] text-[#64748B]">
               {QUESTIONS[currentStep].subtitle}
             </p>
           </div>
@@ -260,16 +260,16 @@ export default function MatcherPage() {
               <button
                 key={idx}
                 onClick={() => handleSelectOption(idx)}
-                className="w-full text-left p-4 sm:p-5 rounded-2xl border border-[#E7E2DE] hover:border-[#690B1B] hover:bg-[#FAF0F2]/40 transition-all cursor-pointer group flex items-start gap-4"
+                className="w-full text-left p-4 sm:p-5 rounded-2xl border border-[#E2E8F0] hover:border-[#2563EB] hover:bg-[#E8F0FF]/30 transition-all cursor-pointer group flex items-start gap-4"
               >
-                <div className="w-6 h-6 rounded-full border-2 border-[#CCC] group-hover:border-[#690B1B] flex items-center justify-center shrink-0 mt-0.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-transparent group-hover:bg-[#690B1B] transition-colors" />
+                <div className="w-6 h-6 rounded-full border-2 border-[#CBD5E1] group-hover:border-[#2563EB] flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-transparent group-hover:bg-[#2563EB] transition-colors" />
                 </div>
                 <div>
-                  <div className="text-[15px] font-bold text-[#111] group-hover:text-[#690B1B]">
+                  <div className="text-[15px] font-bold text-[#0F172A] group-hover:text-[#2563EB]">
                     {option.label}
                   </div>
-                  <div className="text-[13px] text-[#666] mt-0.5 leading-relaxed">
+                  <div className="text-[13px] text-[#64748B] mt-0.5 leading-relaxed">
                     {option.description}
                   </div>
                 </div>
@@ -281,24 +281,24 @@ export default function MatcherPage() {
           {currentStep > 0 && (
             <button
               onClick={handlePrev}
-              className="text-[13px] font-semibold text-[#777] hover:text-[#111] transition-colors"
+              className="text-[13px] font-semibold text-[#64748B] hover:text-[#0F172A] transition-colors"
             >
               ← Previous Question
             </button>
           )}
         </div>
       ) : isCalculating ? (
-        <div className="bg-white rounded-3xl border border-[#E7E2DE] p-12 text-center shadow-xs">
-          <div className="w-12 h-12 rounded-full border-4 border-[#690B1B] border-t-transparent animate-spin mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-[#111]">Analyzing Curricular Profiles...</h3>
-          <p className="text-[14px] text-[#666] mt-1">Cross-referencing verified schools across India.</p>
+        <div className="bg-white rounded-3xl border border-[#E2E8F0] p-12 text-center shadow-xs">
+          <div className="w-12 h-12 rounded-full border-4 border-[#2563EB] border-t-transparent animate-spin mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-[#0F172A]">Analyzing Curricular Profiles...</h3>
+          <p className="text-[14px] text-[#64748B] mt-1">Cross-referencing verified schools across India.</p>
         </div>
       ) : (
         <div className="space-y-8">
           {/* Top Recommendation Banner */}
-          <div className="bg-gradient-to-r from-[#690B1B] to-[#8C0C1D] text-white rounded-3xl p-6 sm:p-10 shadow-sm">
+          <div className="bg-gradient-to-r from-[#1E40AF] to-[#2563EB] text-white rounded-3xl p-6 sm:p-10 shadow-sm">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-[12px] font-bold uppercase tracking-wider mb-3">
-              <Sparkles className="w-3.5 h-3.5 text-[#C9A55D]" /> Recommended Curriculum
+              <Sparkles className="w-3.5 h-3.5 text-[#93C5FD]" /> Recommended Curriculum
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               {topBoard === 'IB' && 'International Baccalaureate (IB DP / MYP)'}
@@ -312,13 +312,13 @@ export default function MatcherPage() {
             <div className="mt-5 flex items-center gap-3 flex-wrap">
               <Link
                 href={`/schools?board=${topBoard}`}
-                className="px-5 py-2.5 rounded-full bg-white text-[#690B1B] text-[13px] font-bold shadow-xs hover:bg-[#F6F4F2]"
+                className="px-5 py-2.5 rounded-full bg-white text-[#1D4ED8] text-[13px] font-bold shadow-xs hover:bg-[#F8FAFC]"
               >
                 Browse All {topBoard} Schools →
               </Link>
               <Link
                 href="/curriculum-guide"
-                className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-[13px] font-semibold"
+                className="px-4 py-2.5 rounded-full bg-white/15 hover:bg-white/25 text-white text-[13px] font-semibold"
               >
                 Read Curriculum Guide
               </Link>
@@ -328,12 +328,12 @@ export default function MatcherPage() {
           {/* Top 4 School Matches */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[18px] font-bold text-[#111]">
+              <h3 className="text-[18px] font-bold text-[#0F172A]">
                 Top Matched Schools for Your Child
               </h3>
               <button
                 onClick={resetMatcher}
-                className="flex items-center gap-1.5 text-[12.5px] font-bold text-[#690B1B] hover:underline cursor-pointer"
+                className="flex items-center gap-1.5 text-[12.5px] font-bold text-[#2563EB] hover:underline cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Retake Assessment</span>
@@ -344,10 +344,10 @@ export default function MatcherPage() {
               {scoredSchools.map(({ school, matchPercentage }) => (
                 <div
                   key={school.id}
-                  className="bg-white rounded-2xl border border-[#E7E2DE] p-5 shadow-xs hover:shadow-md hover:border-[#690B1B]/40 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                  className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-xs hover:shadow-md hover:border-[#2563EB]/40 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                 >
                   <div className="flex items-start gap-4">
-                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 bg-stone-100">
+                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 bg-slate-100">
                       <Image
                         src={getSchoolImage(school)}
                         alt={school.schoolName}
@@ -361,31 +361,37 @@ export default function MatcherPage() {
                         <span className="text-[12px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
                           {matchPercentage}% Match
                         </span>
-                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#FAF0F2] text-[#690B1B]">
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#E8F0FF] text-[#2563EB]">
                           {school.board}
                         </span>
-                        <span className="text-[11px] font-semibold text-[#888]">
+                        <span className="text-[11px] font-semibold text-[#64748B]">
                           Grades: {school.grades}
                         </span>
                       </div>
 
-                      <Link href={`/schools/${school.slug}`}>
-                        <h4 className="text-[17px] font-bold text-[#111] hover:text-[#690B1B] transition-colors leading-snug">
+                      <a 
+                        href={`/schools/${school.slug}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          openSchoolModal(school.slug);
+                        }}
+                      >
+                        <h4 className="text-[17px] font-bold text-[#0F172A] hover:text-[#2563EB] transition-colors leading-snug cursor-pointer">
                           {school.schoolName}
                         </h4>
-                      </Link>
+                      </a>
 
-                      <div className="text-[12.5px] text-[#666] flex items-center gap-2 flex-wrap">
+                      <div className="text-[12.5px] text-[#64748B] flex items-center gap-2 flex-wrap">
                         <span className="flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5 text-[#690B1B]" />
+                          <MapPin className="w-3.5 h-3.5 text-[#2563EB]" />
                           {school.address || school.city}
                         </span>
                         <span>•</span>
-                        <span className="font-bold text-[#690B1B]">{school.approxAnnualFeesInr}</span>
+                        <span className="font-bold text-[#2563EB]">{school.approxAnnualFeesInr}</span>
                       </div>
 
                       {school.pros && (
-                        <p className="text-[12px] text-[#555] line-clamp-1 italic">
+                        <p className="text-[12px] text-[#475569] line-clamp-1 italic">
                           "{school.pros}"
                         </p>
                       )}
@@ -397,18 +403,18 @@ export default function MatcherPage() {
                       onClick={() => toggleCompare(school.slug)}
                       className={`px-3 py-2 rounded-xl text-[12px] font-bold border transition-colors cursor-pointer ${
                         isInCompare(school.slug)
-                          ? 'bg-[#FAF0F2] border-[#690B1B] text-[#690B1B]'
-                          : 'border-[#E7E2DE] text-[#666] hover:bg-[#F6F4F2]'
+                          ? 'bg-[#E8F0FF] border-[#2563EB] text-[#2563EB]'
+                          : 'border-[#E2E8F0] text-[#64748B] hover:bg-[#F8FAFC]'
                       }`}
                     >
                       {isInCompare(school.slug) ? 'In Compare' : 'Compare'}
                     </button>
-                    <Link
-                      href={`/schools/${school.slug}`}
-                      className="px-4 py-2 rounded-xl bg-[#690B1B] hover:bg-[#7A1022] text-white text-[12.5px] font-bold transition-colors"
+                    <button
+                      onClick={() => openSchoolModal(school.slug)}
+                      className="px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[12.5px] font-bold transition-colors shadow-xs cursor-pointer"
                     >
                       View Details →
-                    </Link>
+                    </button>
                   </div>
                 </div>
               ))}

@@ -2,28 +2,28 @@
   <defs>
     <!-- Background Gradient -->
     <linearGradient id='bgGrad' x1='0%' y1='0%' x2='100%' y2='100%'>
-      <stop offset='0%' stop-color='#B81329'/>
-      <stop offset='45%' stop-color='#8C0C1D'/>
-      <stop offset='100%' stop-color='#5A0612'/>
+      <stop offset='0%' stop-color='#3B82F6'/>
+      <stop offset='50%' stop-color='#2563EB'/>
+      <stop offset='100%' stop-color='#1D4ED8'/>
     </linearGradient>
     
     <!-- Subtle Inner Gloss -->
     <linearGradient id='gloss' x1='0%' y1='0%' x2='0%' y2='100%'>
       <stop offset='0%' stop-color='#FFFFFF' stop-opacity='0.25'/>
       <stop offset='30%' stop-color='#FFFFFF' stop-opacity='0.05'/>
-      <stop offset='100%' stop-color='#000000' stop-opacity='0.2'/>
+      <stop offset='100%' stop-color='#000000' stop-opacity='0.15'/>
     </linearGradient>
 
     <!-- Drop Shadow Filter -->
     <filter id='dropShadow' x='-10%' y='-10%' width='130%' height='130%'>
-      <feDropShadow dx='0' dy='12' stdDeviation='16' flood-color='#4A000A' flood-opacity='0.4'/>
+      <feDropShadow dx='0' dy='12' stdDeviation='16' flood-color='#0B2E6B' flood-opacity='0.35'/>
     </filter>
   </defs>
 
-  <!-- Red Squircle Base -->
+  <!-- Blue Squircle Base -->
   <rect x='32' y='32' width='448' height='448' rx='112' ry='112' fill='url(#bgGrad)' filter='url(#dropShadow)'/>
   <rect x='32' y='32' width='448' height='448' rx='112' ry='112' fill='url(#gloss)'/>
-  <rect x='33' y='33' width='446' height='446' rx='111' ry='111' fill='none' stroke='#FFFFFF' stroke-width='3' stroke-opacity='0.25'/>
+  <rect x='33' y='33' width='446' height='446' rx='111' ry='111' fill='none' stroke='#FFFFFF' stroke-width='3' stroke-opacity='0.2'/>
 
   <!-- Graduation Cap (Mortarboard) -->
   <g transform='translate(0, 5)'>
@@ -36,7 +36,7 @@
     <path d='M172,185 L172,216 Q256,242 340,216 L340,185' fill='#FFFFFF' opacity='0.9'/>
 
     <!-- Tassel String and Knob -->
-    <circle cx='256' cy='165' r='7' fill='#8C0C1D'/>
+    <circle cx='256' cy='165' r='7' fill='#1D4ED8'/>
     <circle cx='256' cy='165' r='5' fill='#FFFFFF'/>
     <path d='M256,165 Q330,172 360,225' fill='none' stroke='#FFFFFF' stroke-width='5' stroke-linecap='round'/>
     
@@ -45,34 +45,21 @@
     <path d='M354,238 L366,238 L364,258 L356,258 Z' fill='#FFFFFF'/>
   </g>
 
-  <!-- Collegiate Varsity Letter S -->
+  <!-- Collegiate Varsity Letter C -->
   <g transform='translate(0, 15)'>
-    <!-- Outer Varsity Contour S -->
     <path d='
-      M 345, 235
+      M 340, 235
       L 205, 235
-      L 205, 290
-      L 310, 290
-      Q 350, 290 350, 335
-      L 350, 385
-      Q 350, 425 305, 425
-      L 170, 425
-      L 170, 375
-      L 300, 375
-      L 300, 338
-      L 195, 338
-      Q 155, 338 155, 292
-      L 155, 240
-      Q 155, 195 200, 195
-      L 345, 195
+      Q 165, 235 165, 275
+      L 165, 385
+      Q 165, 425 205, 425
+      L 340, 425
+      L 340, 375
+      L 215, 375
+      L 215, 285
+      L 340, 285
+      L 340, 235
       Z
     ' fill='#FFFFFF'/>
-
-    <!-- Inner Red Cutout for Varsity Double Outline effect -->
-    <path d='
-      M 335, 245
-      L 215, 245
-      L 168, 245
-      ' fill='none'/>
   </g>
 </svg>
