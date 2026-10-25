@@ -35,10 +35,14 @@ export const metadata: Metadata = {
     'school admission finder India 2026',
     'school fee comparison'
   ],
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     siteName: 'CLARVO',
     type: 'website',
     locale: 'en_IN',
+    url: 'https://schools.clarvo.in',
     images: [
       {
         url: '/logo.png',
@@ -71,6 +75,48 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <body className="bg-white text-[#080F1C] min-h-screen flex flex-col antialiased font-[Inter]">
+        {/* JSON-LD: WebSite structured data for sitelinks & search */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'CLARVO',
+              url: 'https://schools.clarvo.in',
+              description:
+                'Discover and compare the best schools in India across IB, IGCSE, ICSE, and CBSE boards.',
+              potentialAction: {
+                '@type': 'SearchAction',
+                target: {
+                  '@type': 'EntryPoint',
+                  urlTemplate:
+                    'https://schools.clarvo.in/schools?q={search_term_string}',
+                },
+                'query-input': 'required name=search_term_string',
+              },
+            }),
+          }}
+        />
+        {/* JSON-LD: Organization structured data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'CLARVO',
+              url: 'https://schools.clarvo.in',
+              logo: 'https://schools.clarvo.in/logo.png',
+              sameAs: [],
+              contactPoint: {
+                '@type': 'ContactPoint',
+                email: 'support@clarvo.in',
+                contactType: 'customer support',
+              },
+            }),
+          }}
+        />
         <AuthProvider>
           <SchoolProvider>
             <Navbar />
