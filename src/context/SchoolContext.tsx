@@ -14,6 +14,7 @@ interface SchoolContextType {
   toggleShortlist: (slug: string) => void;
   isInShortlist: (slug: string) => boolean;
   getSchoolBySlug: (slug: string) => School | undefined;
+  registerSchools: (schools: School[]) => void;
   activeSchoolSlug: string | null;
   openSchoolModal: (slug: string) => void;
   closeSchoolModal: () => void;
@@ -145,9 +146,20 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const dynamicSchoolsRef = useRef<Map<string, School>>(new Map());
+
+  const registerSchools = (schools: School[]) => {
+    schools.forEach((s) => {
+      dynamicSchoolsRef.current.set(s.slug, s);
+      if (s.id) dynamicSchoolsRef.current.set(s.id, s);
+    });
+  };
+
   const isInShortlist = (slug: string) => shortlist.includes(slug);
 
-  const getSchoolBySlug = (slug: string) => SCHOOLS_DATA.find((s) => s.slug === slug);
+  const getSchoolBySlug = (slug: string) => {
+    return dynamicSchoolsRef.current.get(slug) || SCHOOLS_DATA.find((s) => s.slug === slug);
+  };
 
   return (
     <SchoolContext.Provider
@@ -161,6 +173,7 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
         toggleShortlist,
         isInShortlist,
         getSchoolBySlug,
+        registerSchools,
         activeSchoolSlug,
         openSchoolModal,
         closeSchoolModal,

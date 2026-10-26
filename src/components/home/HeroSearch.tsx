@@ -66,12 +66,12 @@ export default function HeroSearch() {
             <option value="">All Cities / Regions</option>
             <option value="Mumbai">Mumbai</option>
             <option value="Bengaluru">Bengaluru</option>
-            <option value="Gurugram">Delhi NCR / Gurugram</option>
-            <option value="New Delhi">New Delhi</option>
+            <option value="Delhi">Delhi NCR</option>
+            <option value="Pune">Pune</option>
+            <option value="Chennai">Chennai</option>
+            <option value="Jaipur">Jaipur</option>
+            <option value="Nashik">Nashik</option>
             <option value="Dehradun">Dehradun</option>
-            <option value="Mussoorie">Mussoorie</option>
-            <option value="Hyderabad">Hyderabad</option>
-            <option value="Ajmer">Ajmer</option>
           </select>
         </div>
 

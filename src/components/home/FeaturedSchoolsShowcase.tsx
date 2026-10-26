@@ -32,7 +32,7 @@ export default function FeaturedSchoolsShowcase() {
         <div className="max-w-xl">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E8F0FF] border border-[#93C5FD]/40 text-[#2563EB] text-[11px] sm:text-[12px] font-bold uppercase tracking-wider mb-2.5">
             <Sparkles className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />
-            <span className="truncate">Verified Schools Directory • {SCHOOLS_DATA.length} Institutions</span>
+            <span className="truncate">Verified Schools Directory • Pan-India Coverage</span>
           </div>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#080F1C] tracking-tight">
             Featured Schools in India
@@ -75,7 +75,7 @@ export default function FeaturedSchoolsShowcase() {
           href="/schools"
           className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 h-[48px] sm:h-[50px] w-full sm:w-auto rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[14px] sm:text-[15px] font-bold shadow-[0_10px_25px_rgba(37,99,235,0.22)] hover:scale-[1.02] transition-all"
         >
-          <span>Explore All {SCHOOLS_DATA.length} Verified Schools</span>
+          <span>Explore All Verified Schools</span>
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>

@@ -29,6 +29,7 @@ export default function SchoolDetailModal() {
     activeSchoolSlug, 
     closeSchoolModal, 
     getSchoolBySlug, 
+    registerSchools,
     isInCompare, 
     toggleCompare, 
     isInShortlist, 
@@ -37,12 +38,35 @@ export default function SchoolDetailModal() {
 
   const [inquiryModalOpen, setInquiryModalOpen] = useState(false);
   const [inquirySubmitted, setInquirySubmitted] = useState(false);
+  const [asyncSchool, setAsyncSchool] = useState<import('@/types/school').School | null>(null);
 
   // Form states
   const [parentName, setParentName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [childGrade, setChildGrade] = useState('Grade 1');
+
+  // Fetch school from CMS if not in cache
+  useEffect(() => {
+    if (activeSchoolSlug) {
+      const cached = getSchoolBySlug(activeSchoolSlug);
+      if (cached) {
+        setAsyncSchool(cached);
+      } else {
+        fetch(`/api/schools?slug=${encodeURIComponent(activeSchoolSlug)}`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.school) {
+              registerSchools([data.school]);
+              setAsyncSchool(data.school);
+            }
+          })
+          .catch(() => {});
+      }
+    } else {
+      setAsyncSchool(null);
+    }
+  }, [activeSchoolSlug, getSchoolBySlug, registerSchools]);
 
   // Listen for Escape key
   useEffect(() => {
@@ -61,7 +85,7 @@ export default function SchoolDetailModal() {
 
   if (!activeSchoolSlug) return null;
 
-  const school = getSchoolBySlug(activeSchoolSlug);
+  const school = getSchoolBySlug(activeSchoolSlug) || asyncSchool;
   if (!school) return null;
 
   const comparing = isInCompare(school.slug);

@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { SchoolProvider } from '@/context/SchoolContext';
@@ -8,12 +7,6 @@ import Footer from '@/components/layout/Footer';
 import CompareDrawer from '@/components/schools/CompareDrawer';
 import SchoolDetailModal from '@/components/schools/SchoolDetailModal';
 
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800', '900'],
-  variable: '--font-inter',
-  display: 'swap',
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://schools.clarvo.in'),
@@ -73,8 +66,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
-      <body className="bg-white text-[#080F1C] min-h-screen flex flex-col antialiased font-[Inter]">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="bg-white text-[#080F1C] min-h-screen flex flex-col antialiased font-[Inter,sans-serif]">
         {/* JSON-LD: WebSite structured data for sitelinks & search */}
         <script
           type="application/ld+json"

@@ -89,23 +89,66 @@ function detectPrimaryBoard(boardStr: string): PrimarySchoolBoard {
   return 'State Board';
 }
 
+export function normalizeCityName(cityName: string): string {
+  const c = cityName.trim();
+  const lower = c.toLowerCase();
+  if (lower === 'bangalore' || lower === 'bengaluru') return 'Bengaluru';
+  if (lower === 'delhi' || lower === 'delhi ncr' || lower === 'new delhi' || lower === 'gurugram' || lower === 'gurgaon' || lower === 'noida') return 'Delhi';
+  if (lower === 'mumbai' || lower === 'navi mumbai' || lower === 'thane') return 'Mumbai';
+  if (lower === 'pune') return 'Pune';
+  if (lower === 'chennai') return 'Chennai';
+  if (lower === 'jaipur') return 'Jaipur';
+  if (lower === 'nashik') return 'Nashik';
+  if (lower === 'dehradun') return 'Dehradun';
+  if (lower === 'mussoorie') return 'Mussoorie';
+  if (lower === 'hyderabad') return 'Hyderabad';
+  if (lower === 'ajmer') return 'Ajmer';
+  return c || 'Other';
+}
+
+export function getCityQueryValues(city: string): string[] {
+  const c = city.trim();
+  const lower = c.toLowerCase();
+  if (lower === 'bengaluru' || lower === 'bangalore') {
+    return ['Bangalore', 'Bengaluru'];
+  }
+  if (lower === 'delhi' || lower === 'delhi ncr' || lower === 'new delhi' || lower === 'gurugram' || lower === 'noida') {
+    return ['Delhi', 'Delhi NCR', 'New Delhi', 'Gurugram', 'Noida'];
+  }
+  if (lower === 'mumbai') {
+    return ['Mumbai', 'Navi Mumbai', 'Thane'];
+  }
+  if (lower === 'pune') return ['Pune'];
+  if (lower === 'chennai') return ['Chennai'];
+  if (lower === 'jaipur') return ['Jaipur'];
+  if (lower === 'nashik') return ['Nashik'];
+  if (lower === 'dehradun') return ['Dehradun'];
+  return [c];
+}
+
 export function normalizeWixSchool(raw: Record<string, unknown>, index = 0): School {
   const schoolName = String(raw.schoolName || raw.name || 'Unnamed School').trim();
   const baseSlug = slugify(schoolName);
-  const slug = index > 0 ? `${baseSlug}-${index}` : baseSlug;
+  const rawId = String(raw._id || raw.id || '');
+  const slug = baseSlug || (rawId ? `school-${rawId}` : `school-${index}`);
   const board = String(raw.board || 'CBSE').trim();
   const primaryBoard = detectPrimaryBoard(board);
   const grades = String(raw.grades || '1-12').trim();
   const approxAnnualFeesInr = String(raw.approxAnnualFeesInr || 'Fees upon request').trim();
   const { feeMin, feeMax } = parseFees(approxAnnualFeesInr);
   const contactDetails = String(raw.contactDetails || '').trim();
-  const { address, phone, email, website, city } = parseContact(contactDetails);
+  const { address, phone, email, website, city: parsedContactCity } = parseContact(contactDetails);
+  
+  // Extract direct CMS city column (handles 'ciy', 'city', 'City', 'CITY')
+  const rawCmsCity = String(raw.ciy || raw.city || raw.City || raw.CITY || '').trim();
+  const city = normalizeCityName(rawCmsCity || parsedContactCity || 'Other');
+  
   const pros = String(raw.pros || '').trim();
   const cons = String(raw.cons || '').trim();
   const notableAlumniAchievements = String(raw.notableAlumniAchievements || '').trim();
 
   return {
-    id: String(raw._id || raw.id || slug),
+    id: rawId || slug,
     slug,
     schoolName,
     board,
@@ -115,7 +158,7 @@ export function normalizeWixSchool(raw: Record<string, unknown>, index = 0): Sch
     feeMin,
     feeMax,
     contactDetails,
-    address,
+    address: address || contactDetails,
     phone,
     email,
     website,
@@ -124,6 +167,123 @@ export function normalizeWixSchool(raw: Record<string, unknown>, index = 0): Sch
     cons,
     notableAlumniAchievements,
   };
+}
+
+/**
+ * Fetch schools from Wix CMS by city.
+ * If a specific city is requested (e.g. Jaipur, Chennai, Nashik, Mumbai, etc.),
+ * this fetches all schools for that city from the CMS collection.
+ */
+export async function fetchWixSchoolsByCity(
+  city: string,
+  fetchAllForCity = true
+): Promise<{ schools: School[]; total: number }> {
+  if (!isWixConfigured()) {
+    const cityValsLower = getCityQueryValues(city).map(v => v.toLowerCase());
+    const matched = city === 'All'
+      ? SCHOOLS_DATA
+      : SCHOOLS_DATA.filter(s => cityValsLower.some(cv => s.city.toLowerCase().includes(cv)));
+    return { schools: matched, total: matched.length };
+  }
+
+  try {
+    const isAll = !city || city === 'All';
+    const cityVals = isAll ? [] : getCityQueryValues(city);
+    const filter = isAll ? undefined : {
+      $or: [
+        ...cityVals.map(val => ({ ciy: { $eq: val } })),
+        ...cityVals.map(val => ({ city: { $eq: val } }))
+      ]
+    };
+
+    // First page (100 items) + total count
+    const firstRes = await fetch('https://www.wixapis.com/wix-data/v2/items/query', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'wix-site-id': WIX_SITE_ID,
+        Authorization: WIX_API_KEY,
+      },
+      body: JSON.stringify({
+        dataCollectionId: WIX_COLLECTION_ID,
+        query: {
+          ...(filter ? { filter } : {}),
+          paging: { limit: 100, offset: 0 }
+        },
+        returnTotalCount: true,
+      }),
+      next: { revalidate: 3600 },
+    });
+
+    if (!firstRes.ok) {
+      console.warn(`Wix query for city ${city} failed with status ${firstRes.status}`);
+      const cityValsLower = getCityQueryValues(city).map(v => v.toLowerCase());
+      const matched = isAll
+        ? SCHOOLS_DATA
+        : SCHOOLS_DATA.filter(s => cityValsLower.some(cv => s.city.toLowerCase().includes(cv)));
+      return { schools: matched, total: matched.length };
+    }
+
+    const firstData = await firstRes.json();
+    const total = firstData.totalCount ?? firstData.pagingMetadata?.total ?? (firstData.dataItems || []).length;
+    let rawItems: Record<string, unknown>[] = (firstData.dataItems || []).map((item: { data: Record<string, unknown> }) => item.data || {});
+
+    // For specific cities, if there are more than 100 schools, fetch all remaining batches in parallel
+    if (!isAll && fetchAllForCity && total > 100) {
+      const remainingOffsets: number[] = [];
+      for (let offset = 100; offset < total && offset < 1500; offset += 100) {
+        remainingOffsets.push(offset);
+      }
+
+      const additionalBatches = await Promise.all(
+        remainingOffsets.map(offset =>
+          fetch('https://www.wixapis.com/wix-data/v2/items/query', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'wix-site-id': WIX_SITE_ID,
+              Authorization: WIX_API_KEY,
+            },
+            body: JSON.stringify({
+              dataCollectionId: WIX_COLLECTION_ID,
+              query: { filter, paging: { limit: 100, offset } }
+            }),
+            next: { revalidate: 3600 },
+          })
+            .then(r => r.json())
+            .then(d => (d.dataItems || []).map((i: { data: Record<string, unknown> }) => i.data || {}))
+            .catch(() => [] as Record<string, unknown>[])
+        )
+      );
+
+      for (const batch of additionalBatches) {
+        rawItems.push(...batch);
+      }
+    }
+
+    // Ensure unique schools by slug/name
+    const seenSlugs = new Set<string>();
+    const schools: School[] = [];
+    rawItems.forEach((raw, idx) => {
+      const school = normalizeWixSchool(raw, idx);
+      if (!seenSlugs.has(school.slug)) {
+        seenSlugs.add(school.slug);
+        schools.push(school);
+      } else {
+        const uniqueSchool = { ...school, slug: `${school.slug}-${idx}` };
+        schools.push(uniqueSchool);
+      }
+    });
+
+    return { schools, total };
+  } catch (err) {
+    console.error('Error in fetchWixSchoolsByCity:', err);
+    const cityValsLower = getCityQueryValues(city).map(v => v.toLowerCase());
+    const matched = city === 'All'
+      ? SCHOOLS_DATA
+      : SCHOOLS_DATA.filter(s => cityValsLower.some(cv => s.city.toLowerCase().includes(cv)));
+    return { schools: matched, total: matched.length };
+  }
 }
 
 /**
@@ -178,3 +338,51 @@ export async function fetchWixSchools(): Promise<School[]> {
     return SCHOOLS_DATA;
   }
 }
+
+/**
+ * Find a school by its slug.
+ * Checks pre-bundled schools first; if not found, queries Wix CMS.
+ */
+export async function getSchoolBySlug(slug: string): Promise<School | undefined> {
+  const local = SCHOOLS_DATA.find((s) => s.slug === slug);
+  if (local) return local;
+
+  if (!isWixConfigured()) return undefined;
+
+  try {
+    const response = await fetch('https://www.wixapis.com/wix-data/v2/items/query', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'wix-site-id': WIX_SITE_ID,
+        Authorization: WIX_API_KEY,
+      },
+      body: JSON.stringify({
+        dataCollectionId: WIX_COLLECTION_ID,
+        query: {
+          filter: {
+            $or: [
+              { slug: { $eq: slug } },
+              { _id: { $eq: slug } },
+            ],
+          },
+          paging: { limit: 1 },
+        },
+      }),
+      next: { revalidate: 3600 },
+    });
+
+    if (response.ok) {
+      const json = await response.json();
+      const item = json.dataItems?.[0];
+      if (item) {
+        return normalizeWixSchool(item.data || {});
+      }
+    }
+  } catch (err) {
+    console.error(`Error querying Wix for slug ${slug}:`, err);
+  }
+
+  return undefined;
+}
+

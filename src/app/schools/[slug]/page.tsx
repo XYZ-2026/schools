@@ -1,7 +1,10 @@
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { SCHOOLS_DATA } from '@/data/schoolsData';
+import { getSchoolBySlug } from '@/lib/wix';
 import SchoolDetailClient from '@/components/schools/SchoolDetailClient';
+
+export const dynamicParams = true;
 
 // Generate static params for all known school slugs so these pages are statically generated
 export async function generateStaticParams() {
@@ -16,7 +19,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const school = SCHOOLS_DATA.find((s) => s.slug === slug);
+  const school = await getSchoolBySlug(slug);
 
   if (!school) {
     return {
@@ -54,7 +57,7 @@ export default async function SchoolPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const school = SCHOOLS_DATA.find((s) => s.slug === slug);
+  const school = await getSchoolBySlug(slug);
 
   if (!school) {
     notFound();

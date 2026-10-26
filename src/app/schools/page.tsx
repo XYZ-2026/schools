@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { SCHOOLS_DATA } from '@/data/schoolsData';
+import { School } from '@/types/school';
 import SchoolCard from '@/components/schools/SchoolCard';
 import { useSchool } from '@/context/SchoolContext';
 import { 
@@ -13,12 +14,13 @@ import {
   Layers,
   Sparkles,
   BookmarkCheck,
-  IndianRupee
+  IndianRupee,
+  Loader2
 } from 'lucide-react';
 
 function SchoolsExplorerContent() {
   const searchParams = useSearchParams();
-  const { shortlist, openSchoolModal } = useSchool();
+  const { shortlist, openSchoolModal, registerSchools } = useSchool();
 
   useEffect(() => {
     const schoolParam = searchParams.get('school');
@@ -41,11 +43,60 @@ function SchoolsExplorerContent() {
   const [sortBy, setSortBy] = useState<string>('name');
   const [onlySaved, setOnlySaved] = useState<boolean>(initialSavedOnly);
 
-  // Available cities from data
-  const cities = ['All', 'Mumbai', 'Bengaluru', 'Delhi NCR', 'Pune'];
+  // Live CMS schools list (initial fallback to bundled data)
+  const [schoolsList, setSchoolsList] = useState<School[]>(() => {
+    if (initialCity && initialCity !== 'All') {
+      const lower = initialCity.toLowerCase();
+      const initialMatches = SCHOOLS_DATA.filter((s) => s.city.toLowerCase().includes(lower));
+      return initialMatches.length > 0 ? initialMatches : SCHOOLS_DATA;
+    }
+    return SCHOOLS_DATA;
+  });
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [visibleCount, setVisibleCount] = useState<number>(36);
+
+  // Available cities from CMS database
+  const cities = [
+    'All',
+    'Mumbai',
+    'Bengaluru',
+    'Delhi',
+    'Pune',
+    'Chennai',
+    'Jaipur',
+    'Nashik',
+    'Dehradun'
+  ];
+
+  // Fetch schools for selected city from Wix CMS
+  useEffect(() => {
+    let isCurrent = true;
+    setIsLoading(true);
+    setVisibleCount(36);
+
+    fetch(`/api/schools?city=${encodeURIComponent(selectedCity)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!isCurrent) return;
+        if (data.schools && Array.isArray(data.schools) && data.schools.length > 0) {
+          registerSchools(data.schools);
+          setSchoolsList(data.schools);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to fetch schools for city:', err);
+      })
+      .finally(() => {
+        if (isCurrent) setIsLoading(false);
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [selectedCity, registerSchools]);
 
   const filteredSchools = useMemo(() => {
-    return SCHOOLS_DATA.filter((school) => {
+    return schoolsList.filter((school) => {
       // Shortlist filter
       if (onlySaved && !shortlist.includes(school.slug)) return false;
 
@@ -60,8 +111,15 @@ function SchoolsExplorerContent() {
       }
 
       // City filter
-      if (selectedCity !== 'All' && school.city !== selectedCity) {
-        return false;
+      if (selectedCity !== 'All') {
+        const sLower = school.city.toLowerCase();
+        const selLower = selectedCity.toLowerCase();
+        const match =
+          sLower === selLower ||
+          sLower.includes(selLower) ||
+          ((selLower === 'bengaluru' || selLower === 'bangalore') && (sLower.includes('bangalore') || sLower.includes('bengaluru'))) ||
+          ((selLower === 'delhi' || selLower === 'delhi ncr') && (sLower.includes('delhi') || sLower.includes('gurugram') || sLower.includes('noida')));
+        if (!match) return false;
       }
 
       // Grade filter
@@ -101,6 +159,7 @@ function SchoolsExplorerContent() {
       return 0;
     });
   }, [
+    schoolsList,
     selectedBoard,
     selectedCity,
     selectedGrade,
@@ -119,6 +178,7 @@ function SchoolsExplorerContent() {
     setSearchQuery('');
     setSortBy('name');
     setOnlySaved(false);
+    setVisibleCount(36);
   };
 
   return (
@@ -127,7 +187,7 @@ function SchoolsExplorerContent() {
       <div className="mb-6 sm:mb-8">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E8F0FF] text-[#2563EB] text-[12px] font-bold uppercase tracking-wider mb-2">
           <Sparkles className="w-3.5 h-3.5 text-[#2563EB]" />
-          Verified Database • {SCHOOLS_DATA.length} Schools
+          Verified Database • Pan-India Directory
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight">
           Explore Schools in India
@@ -273,19 +333,42 @@ function SchoolsExplorerContent() {
       </div>
 
       {/* Results Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-[15px] font-semibold text-[#64748B]">
-          Showing <span className="font-bold text-[#0F172A]">{filteredSchools.length}</span> of {SCHOOLS_DATA.length} verified schools
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
+        <h2 className="text-[15px] font-semibold text-[#64748B] flex items-center gap-2 flex-wrap">
+          <span>
+            Showing <span className="font-bold text-[#0F172A]">{Math.min(visibleCount, filteredSchools.length)}</span> of{' '}
+            <span className="font-bold text-[#0F172A]">{filteredSchools.length}</span> verified schools
+            {selectedCity !== 'All' ? ` in ${selectedCity}` : ''}
+          </span>
+          {isLoading && (
+            <span className="inline-flex items-center gap-1.5 text-[11.5px] text-[#2563EB] font-medium bg-[#E8F0FF] px-2.5 py-0.5 rounded-full">
+              <Loader2 className="w-3 h-3 animate-spin text-[#2563EB]" />
+              Fetching from CMS...
+            </span>
+          )}
         </h2>
       </div>
 
       {/* Schools Card Grid */}
       {filteredSchools.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredSchools.map((school) => (
-            <SchoolCard key={school.id} school={school} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredSchools.slice(0, visibleCount).map((school) => (
+              <SchoolCard key={school.id || school.slug} school={school} />
+            ))}
+          </div>
+
+          {filteredSchools.length > visibleCount && (
+            <div className="mt-10 sm:mt-12 text-center">
+              <button
+                onClick={() => setVisibleCount((prev) => prev + 36)}
+                className="px-8 py-3.5 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[14px] font-bold shadow-md hover:scale-[1.02] transition-all cursor-pointer inline-flex items-center gap-2"
+              >
+                <span>Load More Schools ({filteredSchools.length - visibleCount} remaining)</span>
+              </button>
+            </div>
+          )}
+        </>
       ) : (
         <div className="bg-white rounded-2xl border border-[#E2E8F0] p-12 text-center max-w-lg mx-auto">
           <div className="w-12 h-12 rounded-full bg-[#E8F0FF] text-[#2563EB] flex items-center justify-center mx-auto mb-3">

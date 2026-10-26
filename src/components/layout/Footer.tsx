@@ -59,9 +59,11 @@ export default function Footer() {
               {[
                 { label: "Best Schools in Mumbai", href: "/schools?city=Mumbai" },
                 { label: "Best Schools in Bengaluru", href: "/schools?city=Bengaluru" },
-                { label: "Top Schools in Delhi NCR", href: "/schools?city=Gurugram" },
+                { label: "Top Schools in Delhi NCR", href: "/schools?city=Delhi" },
+                { label: "Top Schools in Jaipur", href: "/schools?city=Jaipur" },
+                { label: "Top Schools in Chennai", href: "/schools?city=Chennai" },
+                { label: "Best Schools in Pune", href: "/schools?city=Pune" },
                 { label: "Dehradun Boarding Schools", href: "/schools?city=Dehradun" },
-                { label: "Top Residential Schools", href: "/schools?type=Boarding" },
               ].map((item) => (
                 <Link
                   key={item.label}

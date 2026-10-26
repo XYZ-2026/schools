@@ -74,7 +74,7 @@ export default function LandingPage() {
             </div>
             <div>
               <strong className="text-[#0F172A] font-bold text-[14px] sm:text-[15px]">
-                100+
+                Pan-India
               </strong>{" "}
               premier schools
             </div>
@@ -165,7 +165,7 @@ export default function LandingPage() {
       <section className="w-full bg-[#080F1C]">
         <div className="grid grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto">
           {[
-            { num: "100+", text: "PREMIER SCHOOLS IN INDIA", highlight: true },
+            { num: "All-India", text: "VERIFIED SCHOOLS COVERAGE", highlight: true },
             { num: "4", text: "RECOGNIZED CURRICULA DECODED", highlight: false },
             { num: "8:1", text: "AVERAGE STUDENT-TEACHER RATIO", highlight: true },
             { num: "100%", text: "VERIFIED ADMISSION DATA", highlight: false },
@@ -261,14 +261,14 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 mt-8 sm:mt-12">
             {[
-              { code: "MUM", name: "Mumbai", count: "15+ Top Schools", desc: "DAIS, Cathedral, Bombay Scottish & Oberoi", city: "Mumbai" },
-              { code: "BLR", name: "Bengaluru", count: "18+ Top Schools", desc: "TISB, Greenwood High, Indus International & Mallya Aditi", city: "Bengaluru" },
-              { code: "DEL", name: "Delhi NCR / Gurugram", count: "25+ Top Schools", desc: "Heritage Xperiential, Step by Step, DPS RKP & Pathways", city: "Gurugram" },
-              { code: "DDN", name: "Dehradun", count: "12+ Boarding Academies", desc: "The Doon School, Welham Girls, Welham Boys & Kasiga", city: "Dehradun" },
-              { code: "MSO", name: "Mussoorie", count: "8+ Mountain Campuses", desc: "Woodstock School & St. George's College in the Himalayas", city: "Mussoorie" },
-              { code: "HYD", name: "Hyderabad", count: "14+ Top Schools", desc: "Oakridge Gachibowli, Chirec & Hyderabad Public School", city: "Hyderabad" },
-              { code: "AJM", name: "Ajmer & Rajasthan", count: "10+ Heritage Boarding", desc: "Mayo College, Mayo Girls & Scindia School", city: "Ajmer" },
-              { code: "PUN", name: "Pune & Sahyadris", count: "9+ Global Campuses", desc: "UWC Mahindra College & Sahyadri Krishnamurti School", city: "Pune" },
+              { code: "MUM", name: "Mumbai", count: "Top Rated Schools", desc: "DAIS, Cathedral, Bombay Scottish & Oberoi", city: "Mumbai" },
+              { code: "BLR", name: "Bengaluru", count: "Leading Campuses", desc: "TISB, Greenwood High, Indus International & Mallya Aditi", city: "Bengaluru" },
+              { code: "DEL", name: "Delhi NCR", count: "Premier Institutions", desc: "Heritage Xperiential, Step by Step, DPS RKP & Pathways", city: "Delhi" },
+              { code: "PUN", name: "Pune & Sahyadris", count: "Global Campuses", desc: "UWC Mahindra College, Sahyadri Krishnamurti & top academies", city: "Pune" },
+              { code: "CHE", name: "Chennai", count: "Premier Academic Hub", desc: "Chettinad Vidyashram, Sishya, DAV & top CBSE/ICSE institutions", city: "Chennai" },
+              { code: "JAI", name: "Jaipur", count: "Heritage & Modern Leaders", desc: "Maharani Gayatri Devi, Neerja Modi, Jayshree Periwal & legacy schools", city: "Jaipur" },
+              { code: "NAS", name: "Nashik", count: "Top Day & Boarding", desc: "Barnes School, Fravashi Academy, DPS & premier academies", city: "Nashik" },
+              { code: "DDN", name: "Dehradun", count: "Heritage Boarding", desc: "The Doon School, Welham Girls, Welham Boys & Kasiga", city: "Dehradun" },
             ].map((item) => (
               <Link
                 key={item.code}
