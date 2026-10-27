@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchWixSchoolsByCity, getSchoolBySlug } from '@/lib/wix';
+import { fetchWixSchoolsByCity, searchWixSchools, getSchoolBySlug } from '@/lib/wix';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,14 +17,52 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ school });
     }
 
-    // City-based search / filter
     const city = searchParams.get('city') || 'All';
-    const { schools, total } = await fetchWixSchoolsByCity(city, true);
+    const board = searchParams.get('board') || 'All';
+    const q = searchParams.get('q') || '';
+    const grade = searchParams.get('grade') || 'All';
+    const sort = searchParams.get('sort') || 'name';
+    const limitParam = searchParams.get('limit');
+    const offsetParam = searchParams.get('offset');
+
+    const limit = limitParam ? parseInt(limitParam, 10) : (city !== 'All' && !q && board === 'All' ? 300 : 60);
+    const offset = offsetParam ? parseInt(offsetParam, 10) : 0;
+
+    // If city is specific and no keyword/board filter, fetch full city list with parallel batches
+    if (city !== 'All' && !q && board === 'All' && !offsetParam) {
+      const { schools, total } = await fetchWixSchoolsByCity(city, true);
+      return NextResponse.json({
+        city,
+        board,
+        total,
+        count: schools.length,
+        offset: 0,
+        limit: schools.length,
+        hasMore: false,
+        schools,
+      });
+    }
+
+    // Comprehensive multi-field query across 5,249 schools in Wix CMS
+    const { schools, total, hasMore } = await searchWixSchools({
+      city,
+      board,
+      query: q,
+      grade,
+      limit,
+      offset,
+      sort,
+    });
 
     return NextResponse.json({
       city,
+      board,
+      query: q,
       total,
       count: schools.length,
+      offset,
+      limit,
+      hasMore,
       schools,
     });
   } catch (err) {

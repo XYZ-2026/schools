@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { SCHOOLS_DATA } from '@/data/schoolsData';
 import { School } from '@/types/school';
 import { useSchool } from '@/context/SchoolContext';
 import { getSchoolImage } from '@/components/schools/SchoolCard';
@@ -14,149 +13,292 @@ import {
   IndianRupee, 
   GraduationCap,
   Layers,
-  ThumbsUp,
-  Award,
-  ArrowRight
+  CheckCircle2,
+  Building2,
+  ArrowRight,
+  Loader2,
+  Target,
+  BookmarkCheck,
+  Compass
 } from 'lucide-react';
 import AuthGuard from '@/components/auth/AuthGuard';
 
-interface Question {
-  id: number;
-  title: string;
-  subtitle: string;
-  options: {
-    label: string;
-    description: string;
-    boardWeight: { IB: number; IGCSE: number; ICSE: number; CBSE: number };
-    maxBudget?: number;
-  }[];
+interface QuestionOption {
+  label: string;
+  description: string;
+  value: string;
+  meta?: Record<string, unknown>;
 }
 
-const QUESTIONS: Question[] = [
+interface MatcherQuestion {
+  id: number;
+  key: 'grade' | 'city' | 'goal' | 'budget' | 'priority';
+  title: string;
+  subtitle: string;
+  options: QuestionOption[];
+}
+
+const QUESTIONS: MatcherQuestion[] = [
   {
     id: 1,
+    key: 'grade',
     title: "What is your child's upcoming grade level?",
-    subtitle: 'This helps determine which curriculum transitions are most seamless.',
+    subtitle: 'Helps identify schools with active admissions and age-appropriate infrastructure.',
     options: [
       {
-        label: 'Pre-Primary / Primary (Nursery to Grade 5)',
-        description: 'Building curiosity, language foundations, and foundational numeracy.',
-        boardWeight: { IB: 3, IGCSE: 2, ICSE: 2, CBSE: 2 }
+        label: 'Pre-Primary / Kindergarten (Nursery, LKG, UKG)',
+        description: 'Focus on experiential learning, curiosity, play, and emotional safety.',
+        value: 'Pre-Primary',
+      },
+      {
+        label: 'Primary School (Grades 1 to 5)',
+        description: 'Foundational literacy, numeracy, conceptual grasp, and habits.',
+        value: 'Primary (1-5)',
       },
       {
         label: 'Middle School (Grades 6 to 8)',
-        description: 'Broadening academic horizons and discovering extracurricular passions.',
-        boardWeight: { IB: 2, IGCSE: 3, ICSE: 2, CBSE: 2 }
+        description: 'Broadening academic subjects, sports, languages, and early interests.',
+        value: 'Middle (6-8)',
       },
       {
         label: 'Secondary (Grades 9 & 10)',
-        description: 'Crucial board certification years (IGCSE, ICSE, or CBSE Class 10).',
-        boardWeight: { IB: 2, IGCSE: 3, ICSE: 3, CBSE: 3 }
+        description: 'Crucial board exam readiness (CBSE, ICSE, Cambridge IGCSE, or MYP).',
+        value: 'Secondary (9-10)',
       },
       {
         label: 'Senior Secondary / Pre-University (Grades 11 & 12)',
-        description: 'Direct launchpad to global undergraduate degrees or competitive exams.',
-        boardWeight: { IB: 3, IGCSE: 2, ICSE: 2, CBSE: 3 }
-      }
-    ]
+        description: 'Launchpad for Ivy League, global university admissions or IIT-JEE/NEET.',
+        value: 'Senior Secondary (11-12)',
+      },
+    ],
   },
   {
     id: 2,
-    title: 'Where do you envision your child attending college / university?',
-    subtitle: 'Curricular alignment is the single most important factor for university admissions.',
+    key: 'city',
+    title: 'Which city or region are you targeting?',
+    subtitle: 'We filter through real verified campuses in your preferred location.',
     options: [
       {
-        label: 'Global Ivy League, US, UK, Canada & Europe',
-        description: 'Prioritizing holistic profile building, research essays, and extracurricular depth.',
-        boardWeight: { IB: 4, IGCSE: 3, ICSE: 2, CBSE: 1 }
+        label: 'Mumbai & MMR',
+        description: 'South Mumbai, BKC, Bandra, Powai, Thane, Navi Mumbai.',
+        value: 'Mumbai',
       },
       {
-        label: 'Indian National Competitive Exams (IIT-JEE, NEET, CUET, NDA)',
-        description: 'Requires direct NCERT syllabus alignment and specialized objective problem solving.',
-        boardWeight: { IB: 0, IGCSE: 1, ICSE: 2, CBSE: 4 }
+        label: 'Bengaluru (Bangalore)',
+        description: 'Whitefield, Koramangala, Indiranagar, Sarjapur, North Bangalore.',
+        value: 'Bengaluru',
       },
       {
-        label: 'Premier Indian Liberal Arts & Global Dual Degrees (Ashoka, Krea, Plaksha)',
-        description: 'Emphasis on interdisciplinary thinking, communication, and humanities.',
-        boardWeight: { IB: 3, IGCSE: 3, ICSE: 3, CBSE: 2 }
+        label: 'Delhi NCR (Delhi, Gurgaon, Noida)',
+        description: 'South Delhi, Dwarka, Golf Course Rd Gurgaon, Noida Expressway.',
+        value: 'Delhi-NCR',
       },
       {
-        label: 'Undecided / Open to Both Pathways',
-        description: 'Looking for a balanced curriculum with maximum flexible future transferability.',
-        boardWeight: { IB: 2, IGCSE: 3, ICSE: 3, CBSE: 3 }
-      }
-    ]
+        label: 'Pune',
+        description: 'Kalyani Nagar, Kothrud, Baner, Hinjewadi, Hadapsar.',
+        value: 'Pune',
+      },
+      {
+        label: 'Chennai',
+        description: 'Adyar, Anna Nagar, OMR, Velachery, Kilpauk.',
+        value: 'Chennai',
+      },
+      {
+        label: 'Hyderabad',
+        description: 'Gachibowli, HITEC City, Jubilee Hills, Banjara Hills.',
+        value: 'Hyderabad',
+      },
+      {
+        label: 'Residential / Boarding Hubs (Dehradun, Mussoorie, Pan-India)',
+        description: 'Premier heritage boarding schools and residential international campuses.',
+        value: 'Boarding',
+      },
+      {
+        label: 'All India (Relocating / Open to Any Location)',
+        description: 'Search across 5,200+ verified schools across all major Indian cities.',
+        value: 'All',
+      },
+    ],
   },
   {
     id: 3,
-    title: 'What is your annual tuition budget expectation?',
-    subtitle: 'CLARVO features verified fee structures across every bracket.',
+    key: 'goal',
+    title: 'Where do you envision your child after Grade 12?',
+    subtitle: 'Curricular alignment is the single most critical factor for university placements.',
     options: [
       {
-        label: 'Affordable / Moderate (Under ₹3,00,000 / year)',
-        description: 'High academic standard state-supported or premier government institutions.',
-        boardWeight: { IB: 0, IGCSE: 1, ICSE: 3, CBSE: 4 },
-        maxBudget: 300000
+        label: 'Global Ivy League, US, UK, Canada & Europe',
+        description: 'Holistic profile building, research essays, critical thinking, and international recognition.',
+        value: 'global_college',
+        meta: { recommendedBoard: 'IB' },
       },
       {
-        label: 'Mid-Tier Premium (₹3,00,000 - ₹7,00,000 / year)',
-        description: 'Reputed Cambridge IGCSE and ICSE institutions with strong campus amenities.',
-        boardWeight: { IB: 2, IGCSE: 4, ICSE: 4, CBSE: 3 },
-        maxBudget: 700000
+        label: 'Indian National Competitive Exams (IIT-JEE, NEET, CUET, NDA)',
+        description: 'Demands rigorous NCERT syllabus synchronization and objective problem-solving skills.',
+        value: 'competitive_exams',
+        meta: { recommendedBoard: 'CBSE' },
       },
       {
-        label: 'Elite International (₹7,00,000 - ₹15,00,000+ / year)',
-        description: 'World-class IB continuum schools with multinational faculty and college counsellors.',
-        boardWeight: { IB: 5, IGCSE: 3, ICSE: 1, CBSE: 1 },
-        maxBudget: 2500000
-      }
-    ]
+        label: 'Premier Indian Universities & Liberal Arts (Ashoka, Krea, Plaksha, BITS)',
+        description: 'Interdisciplinary breadth, comprehensive English literature, and strong analytical reasoning.',
+        value: 'balanced',
+        meta: { recommendedBoard: 'ICSE' },
+      },
+      {
+        label: 'Undecided / Open to Both Pathways',
+        description: 'Balanced curriculum offering seamless transferability to both Indian and overseas colleges.',
+        value: 'open',
+        meta: { recommendedBoard: 'All' },
+      },
+    ],
   },
   {
     id: 4,
-    title: 'What pedagogical style resonates best with your child?',
-    subtitle: 'Different curricula nurture different problem-solving orientations.',
+    key: 'budget',
+    title: 'What is your annual tuition fee budget expectation?',
+    subtitle: 'Our verified database covers tuition brackets from budget to elite tier.',
     options: [
       {
-        label: 'Inquiry-Based & Research-Oriented Explorer',
-        description: 'Thrives on questions, debates, critical analysis, and hands-on projects.',
-        boardWeight: { IB: 4, IGCSE: 3, ICSE: 2, CBSE: 1 }
+        label: 'Budget-Friendly (Under ₹1,50,000 / year)',
+        description: 'Strong academic standards with accessible community-focused tuition.',
+        value: '150000',
       },
       {
-        label: 'Structured & Goal-Oriented Learner',
-        description: 'Excels with clear benchmarks, systematic textbook practice, and objective tests.',
-        boardWeight: { IB: 1, IGCSE: 2, ICSE: 3, CBSE: 4 }
+        label: 'Mid-Tier Standard (₹1,50,000 - ₹3,50,000 / year)',
+        description: 'Reputed private CBSE, ICSE, and Cambridge day schools with solid infrastructure.',
+        value: '350000',
       },
       {
-        label: 'Passionate in Arts, Literature & Debate',
-        description: 'Deep love for essay writing, literature, linguistic expression, and theatre.',
-        boardWeight: { IB: 3, IGCSE: 3, ICSE: 4, CBSE: 2 }
-      }
-    ]
-  }
+        label: 'Premium Day School (₹3,50,000 - ₹7,00,000 / year)',
+        description: 'Modern campus amenities, sports complexes, robotics labs, and international boards.',
+        value: '700000',
+      },
+      {
+        label: 'Elite International Continuum (₹7,00,000 - ₹15,00,000+ / year)',
+        description: 'World-class IB World Schools with multinational faculty and dedicated college counsellors.',
+        value: '1500000',
+      },
+      {
+        label: 'Any Budget / No Constraint',
+        description: 'Show premier institutions purely matched on academic and holistic merit.',
+        value: '2500000',
+      },
+    ],
+  },
+  {
+    id: 5,
+    key: 'priority',
+    title: 'What campus characteristic is most important to your family?',
+    subtitle: 'Matches school cultures that nurture your child’s specific passions.',
+    options: [
+      {
+        label: 'Academic Rigour & High Board Averages',
+        description: 'Proven track record of stellar 95%+ board results, Olympiads, and university admits.',
+        value: 'academic',
+      },
+      {
+        label: 'World-Class Sports, Arts & Performing Facilities',
+        description: 'Olympic-sized swimming pools, FIFA football turfs, auditoriums, and professional coaches.',
+        value: 'sports_arts',
+      },
+      {
+        label: 'Individual Attention & Low Student-Teacher Ratio',
+        description: 'Small class batches (under 20 students), personalized mentoring, and pastoral care.',
+        value: 'individual_attention',
+      },
+      {
+        label: 'Global Outlook, Leadership & Innovation Labs',
+        description: 'Model UN, design thinking studios, international student exchange, and entrepreneurship.',
+        value: 'global_leadership',
+      },
+    ],
+  },
 ];
+
+interface MatchedSchoolItem {
+  school: School;
+  matchScore: number;
+  matchReasons: string[];
+  badges: string[];
+}
 
 function MatcherContent() {
   const [currentStep, setCurrentStep] = useState(0);
-  const [answers, setAnswers] = useState<number[]>([]);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isCalculating, setIsCalculating] = useState(false);
+  const [calculationStage, setCalculationStage] = useState('Querying 5,200+ schools in database...');
   const [completed, setCompleted] = useState(false);
+  const [matchedResults, setMatchedResults] = useState<MatchedSchoolItem[]>([]);
+  const [recommendedBoard, setRecommendedBoard] = useState('CBSE');
+  const [totalCandidates, setTotalCandidates] = useState(5249);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [visibleCount, setVisibleCount] = useState<number>(4);
 
-  const { toggleCompare, isInCompare, openSchoolModal } = useSchool();
+  const { toggleCompare, isInCompare, openSchoolModal, shortlist, toggleShortlist } = useSchool();
 
-  const handleSelectOption = (optionIndex: number) => {
-    const updatedAnswers = [...answers];
-    updatedAnswers[currentStep] = optionIndex;
+  const handleSelectOption = async (optionValue: string) => {
+    const currentQ = QUESTIONS[currentStep];
+    const updatedAnswers = { ...answers, [currentQ.key]: optionValue };
     setAnswers(updatedAnswers);
 
     if (currentStep < QUESTIONS.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
+      // Final Question Answered -> Trigger Real AI Matching against Live Database
       setIsCalculating(true);
-      setTimeout(() => {
-        setIsCalculating(false);
+      setErrorMsg('');
+
+      try {
+        setCalculationStage('Filtering 5,200+ schools by location and board...');
+
+        // Map answers to API parameters
+        const cityPref = updatedAnswers.city || 'All';
+        const goalPref = updatedAnswers.goal || 'open';
+        let targetBoard = 'All';
+        if (goalPref === 'global_college') targetBoard = 'IB';
+        else if (goalPref === 'competitive_exams') targetBoard = 'CBSE';
+        else if (goalPref === 'balanced') targetBoard = 'ICSE';
+
+        const budgetMax = updatedAnswers.budget ? parseInt(updatedAnswers.budget, 10) : 1500000;
+
+        const payload = {
+          city: cityPref,
+          grade: updatedAnswers.grade,
+          board: targetBoard,
+          budgetMax,
+          priority: updatedAnswers.priority || 'academic',
+        };
+
+        const res = await fetch('/api/match', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          throw new Error('Failed to compute matches');
+        }
+
+        const data = await res.json();
+
+        setCalculationStage('Ranking top candidate institutions...');
+        await new Promise((r) => setTimeout(r, 400));
+
+        if (data.matchedSchools && Array.isArray(data.matchedSchools) && data.matchedSchools.length > 0) {
+          setMatchedResults(data.matchedSchools);
+          setRecommendedBoard(data.topBoard || targetBoard || 'CBSE');
+          setTotalCandidates(data.totalCandidates || 5249);
+        } else {
+          setErrorMsg('No exact schools matched your filters. Broadening search to all regions.');
+        }
+
         setCompleted(true);
-      }, 700);
+      } catch (err) {
+        console.error('Matcher error:', err);
+        setErrorMsg('Could not reach the database. Please try again.');
+      } finally {
+        setIsCalculating(false);
+      }
     }
   };
 
@@ -166,50 +308,15 @@ function MatcherContent() {
 
   const resetMatcher = () => {
     setCurrentStep(0);
-    setAnswers([]);
+    setAnswers({});
     setCompleted(false);
     setIsCalculating(false);
+    setMatchedResults([]);
+    setVisibleCount(4);
+    setErrorMsg('');
   };
 
-  // Compute matched board and ranked school recommendations
-  const getResults = () => {
-    const boardScores = { IB: 0, IGCSE: 0, ICSE: 0, CBSE: 0 };
-    let budgetCap = 2500000;
-
-    answers.forEach((ansIdx, qIdx) => {
-      const q = QUESTIONS[qIdx];
-      const opt = q.options[ansIdx];
-      if (opt) {
-        boardScores.IB += opt.boardWeight.IB;
-        boardScores.IGCSE += opt.boardWeight.IGCSE;
-        boardScores.ICSE += opt.boardWeight.ICSE;
-        boardScores.CBSE += opt.boardWeight.CBSE;
-        if (opt.maxBudget) budgetCap = opt.maxBudget;
-      }
-    });
-
-    // Best board
-    const sortedBoards = (Object.keys(boardScores) as (keyof typeof boardScores)[]).sort(
-      (a, b) => boardScores[b] - boardScores[a]
-    );
-    const topBoard = sortedBoards[0];
-
-    // Score schools
-    const scoredSchools = SCHOOLS_DATA.map((school) => {
-      let score = 70; // baseline
-      const bLower = school.board.toLowerCase();
-      const targetLower = topBoard.toLowerCase();
-      if (bLower.includes(targetLower)) score += 18;
-      if (school.primaryBoard === topBoard) score += 8;
-      if (school.feeMin <= budgetCap && school.feeMin > 0) score += 6;
-      const matchPercentage = Math.min(99, Math.round(score));
-      return { school, matchPercentage };
-    }).sort((a, b) => b.matchPercentage - a.matchPercentage).slice(0, 4);
-
-    return { topBoard, scoredSchools };
-  };
-
-  const { topBoard, scoredSchools } = getResults();
+  const currentQ = QUESTIONS[currentStep];
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
@@ -217,13 +324,13 @@ function MatcherContent() {
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E8F0FF] text-[#2563EB] text-[12px] font-bold uppercase tracking-wider mb-2">
           <Sparkles className="w-3.5 h-3.5 text-[#2563EB]" />
-          Intelligent Recommendation Engine
+          Intelligent AI Matcher • 5,200+ Database
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight">
           Find Your Child's Ideal School &amp; Board
         </h1>
         <p className="mt-2 text-[15px] text-[#64748B] max-w-xl mx-auto">
-          Takes under 60 seconds. We analyze your academic vision, target university timeline, and family values.
+          Personalized match engine powered by live admissions, verified tuition fees, curricula, and campus strengths across India.
         </p>
       </div>
 
@@ -248,41 +355,56 @@ function MatcherContent() {
           {/* Current Question */}
           <div className="mb-8">
             <h2 className="text-xl sm:text-2xl font-bold text-[#0F172A]">
-              {QUESTIONS[currentStep].title}
+              {currentQ.title}
             </h2>
             <p className="mt-1 text-[14px] text-[#64748B]">
-              {QUESTIONS[currentStep].subtitle}
+              {currentQ.subtitle}
             </p>
           </div>
 
-          {/* Options */}
+          {/* Options Grid */}
           <div className="space-y-3 mb-8">
-            {QUESTIONS[currentStep].options.map((option, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleSelectOption(idx)}
-                className="w-full text-left p-4 sm:p-5 rounded-2xl border border-[#E2E8F0] hover:border-[#2563EB] hover:bg-[#E8F0FF]/30 transition-all cursor-pointer group flex items-start gap-4"
-              >
-                <div className="w-6 h-6 rounded-full border-2 border-[#CBD5E1] group-hover:border-[#2563EB] flex items-center justify-center shrink-0 mt-0.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-transparent group-hover:bg-[#2563EB] transition-colors" />
-                </div>
-                <div>
-                  <div className="text-[15px] font-bold text-[#0F172A] group-hover:text-[#2563EB]">
-                    {option.label}
+            {currentQ.options.map((option, idx) => {
+              const isSelected = answers[currentQ.key] === option.value;
+              return (
+                <button
+                  key={idx}
+                  onClick={() => handleSelectOption(option.value)}
+                  className={`w-full text-left p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer group flex items-start gap-4 ${
+                    isSelected
+                      ? 'border-[#2563EB] bg-[#E8F0FF]/40 ring-2 ring-[#2563EB]/20'
+                      : 'border-[#E2E8F0] hover:border-[#2563EB] hover:bg-[#F8FAFC]'
+                  }`}
+                >
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
+                    isSelected
+                      ? 'border-[#2563EB] bg-[#2563EB]'
+                      : 'border-[#CBD5E1] group-hover:border-[#2563EB]'
+                  }`}>
+                    {isSelected ? (
+                      <CheckCircle2 className="w-4 h-4 text-white" />
+                    ) : (
+                      <div className="w-2.5 h-2.5 rounded-full bg-transparent group-hover:bg-[#2563EB] transition-colors" />
+                    )}
                   </div>
-                  <div className="text-[13px] text-[#64748B] mt-0.5 leading-relaxed">
-                    {option.description}
+                  <div>
+                    <div className="text-[15px] font-bold text-[#0F172A] group-hover:text-[#2563EB]">
+                      {option.label}
+                    </div>
+                    <div className="text-[13px] text-[#64748B] mt-0.5 leading-relaxed">
+                      {option.description}
+                    </div>
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
 
           {/* Navigation Controls */}
           {currentStep > 0 && (
             <button
               onClick={handlePrev}
-              className="text-[13px] font-semibold text-[#64748B] hover:text-[#0F172A] transition-colors"
+              className="text-[13px] font-semibold text-[#64748B] hover:text-[#0F172A] transition-colors cursor-pointer"
             >
               ← Previous Question
             </button>
@@ -290,136 +412,231 @@ function MatcherContent() {
         </div>
       ) : isCalculating ? (
         <div className="bg-white rounded-3xl border border-[#E2E8F0] p-12 text-center shadow-xs">
-          <div className="w-12 h-12 rounded-full border-4 border-[#2563EB] border-t-transparent animate-spin mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-[#0F172A]">Analyzing Curricular Profiles...</h3>
-          <p className="text-[14px] text-[#64748B] mt-1">Cross-referencing verified schools across India.</p>
+          <div className="w-14 h-14 rounded-full border-4 border-[#2563EB] border-t-transparent animate-spin mx-auto mb-5" />
+          <h3 className="text-2xl font-extrabold text-[#0F172A]">Cross-Referencing Verified Schools...</h3>
+          <p className="text-[14px] text-[#2563EB] font-semibold mt-2 animate-pulse">{calculationStage}</p>
+          <p className="text-[12.5px] text-[#64748B] mt-1">
+            Analyzing 5,200+ institutions across India based on your fee budget, board, and location preferences.
+          </p>
         </div>
       ) : (
         <div className="space-y-8">
           {/* Top Recommendation Banner */}
-          <div className="bg-gradient-to-r from-[#1E40AF] to-[#2563EB] text-white rounded-3xl p-6 sm:p-10 shadow-sm">
+          <div className="bg-gradient-to-r from-[#1E40AF] to-[#2563EB] text-white rounded-3xl p-6 sm:p-10 shadow-sm relative overflow-hidden">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-[12px] font-bold uppercase tracking-wider mb-3">
-              <Sparkles className="w-3.5 h-3.5 text-[#93C5FD]" /> Recommended Curriculum
+              <Sparkles className="w-3.5 h-3.5 text-[#93C5FD]" /> AI Recommendation
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-              {topBoard === 'IB' && 'International Baccalaureate (IB DP / MYP)'}
-              {topBoard === 'IGCSE' && 'Cambridge IGCSE & A-Levels'}
-              {topBoard === 'ICSE' && 'ICSE & ISC Board'}
-              {topBoard === 'CBSE' && 'Central Board of Secondary Education (CBSE)'}
+              {recommendedBoard === 'IB' && 'International Baccalaureate (IB PYP / MYP / DP)'}
+              {recommendedBoard === 'IGCSE' && 'Cambridge Assessment International (IGCSE & A-Levels)'}
+              {recommendedBoard === 'ICSE' && 'Council for the Indian School Certificate (ICSE / ISC)'}
+              {recommendedBoard === 'CBSE' && 'Central Board of Secondary Education (CBSE)'}
+              {recommendedBoard === 'All' && 'Top Pan-India Curricular Frameworks'}
             </h2>
             <p className="mt-3 text-[15px] text-white/90 leading-relaxed max-w-2xl">
-              Based on your target university timeline and child's learning orientation, the {topBoard} framework provides the strongest competitive edge.
+              Based on your target university timeline, child’s learning orientation, and family budget, this curriculum provides the strongest strategic fit.
             </p>
-            <div className="mt-5 flex items-center gap-3 flex-wrap">
+            <div className="mt-6 flex items-center gap-3 flex-wrap">
               <Link
-                href={`/schools?board=${topBoard}`}
-                className="px-5 py-2.5 rounded-full bg-white text-[#1D4ED8] text-[13px] font-bold shadow-xs hover:bg-[#F8FAFC]"
+                href={`/schools?board=${encodeURIComponent(recommendedBoard)}`}
+                className="px-5 py-2.5 rounded-full bg-white text-[#1D4ED8] text-[13px] font-bold shadow-xs hover:bg-[#F8FAFC] transition-colors"
               >
-                Browse All {topBoard} Schools →
+                Browse All {recommendedBoard} Schools →
               </Link>
               <Link
                 href="/curriculum-guide"
-                className="px-4 py-2.5 rounded-full bg-white/15 hover:bg-white/25 text-white text-[13px] font-semibold"
+                className="px-4 py-2.5 rounded-full bg-white/15 hover:bg-white/25 text-white text-[13px] font-semibold transition-colors"
               >
                 Read Curriculum Guide
               </Link>
+              <button
+                onClick={resetMatcher}
+                className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-[13px] font-semibold flex items-center gap-1.5 cursor-pointer ml-auto"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Retake Quiz</span>
+              </button>
             </div>
           </div>
 
-          {/* Top 4 School Matches */}
+          {/* Matched Schools Results from 5,249 database */}
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[18px] font-bold text-[#0F172A]">
-                Top Matched Schools for Your Child
-              </h3>
-              <button
-                onClick={resetMatcher}
-                className="flex items-center gap-1.5 text-[12.5px] font-bold text-[#2563EB] hover:underline cursor-pointer"
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <div>
+                <h3 className="text-xl font-bold text-[#0F172A] flex items-center gap-2">
+                  <span>Top Matched Schools for Your Child</span>
+                  <span className="text-[12px] font-bold px-2 py-0.5 rounded-full bg-[#E8F0FF] text-[#2563EB]">
+                    {matchedResults.length} Matched from {totalCandidates.toLocaleString('en-IN')}+ Database
+                  </span>
+                </h3>
+                <p className="text-[13px] text-[#64748B] mt-0.5">
+                  Ranked by curriculum match, fee budget alignment, and campus focus areas.
+                </p>
+              </div>
+
+              <Link
+                href={`/schools?city=${encodeURIComponent(answers.city && answers.city !== 'All' ? answers.city : 'All')}`}
+                className="text-[13px] font-bold text-[#2563EB] hover:underline flex items-center gap-1"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>Retake Assessment</span>
-              </button>
+                <span>View Full Directory</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
 
-            <div className="space-y-4">
-              {scoredSchools.map(({ school, matchPercentage }) => (
-                <div
-                  key={school.id}
-                  className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-xs hover:shadow-md hover:border-[#2563EB]/40 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 bg-slate-100">
-                      <Image
-                        src={getSchoolImage(school)}
-                        alt={school.schoolName}
-                        fill
-                        sizes="80px"
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[12px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                          {matchPercentage}% Match
-                        </span>
-                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#E8F0FF] text-[#2563EB]">
-                          {school.board}
-                        </span>
-                        <span className="text-[11px] font-semibold text-[#64748B]">
-                          Grades: {school.grades}
-                        </span>
-                      </div>
-
-                      <a 
-                        href={`/schools/${school.slug}`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          openSchoolModal(school.slug);
-                        }}
+            {matchedResults.length > 0 ? (
+              <>
+                <div className="space-y-4">
+                  {matchedResults.slice(0, visibleCount).map(({ school, matchScore, matchReasons, badges }) => {
+                    const isSaved = shortlist.includes(school.slug);
+                    return (
+                      <div
+                        key={school.id || school.slug}
+                        className="bg-white rounded-2xl border border-[#E2E8F0] p-5 sm:p-6 shadow-xs hover:shadow-md hover:border-[#2563EB]/40 transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-5"
                       >
-                        <h4 className="text-[17px] font-bold text-[#0F172A] hover:text-[#2563EB] transition-colors leading-snug cursor-pointer">
-                          {school.schoolName}
-                        </h4>
-                      </a>
+                        <div className="flex items-start gap-4 min-w-0 flex-1">
+                          <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 bg-slate-100 border border-slate-200">
+                            <Image
+                              src={getSchoolImage(school)}
+                              alt={school.schoolName}
+                              fill
+                              sizes="80px"
+                              className="object-cover"
+                            />
+                          </div>
 
-                      <div className="text-[12.5px] text-[#64748B] flex items-center gap-2 flex-wrap">
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5 text-[#2563EB]" />
-                          {school.address || school.city}
-                        </span>
-                        <span>•</span>
-                        <span className="font-bold text-[#2563EB]">{school.approxAnnualFeesInr}</span>
+                          <div className="space-y-1.5 min-w-0 flex-1">
+                            {/* Badges & Match Score */}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-[12.5px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 flex items-center gap-1">
+                                <Sparkles className="w-3 h-3 text-emerald-600" />
+                                {matchScore}% Match
+                              </span>
+
+                              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#E8F0FF] text-[#2563EB]">
+                                {school.board}
+                              </span>
+
+                              {badges.map((b, i) => (
+                                <span key={i} className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                                  {b}
+                                </span>
+                              ))}
+                            </div>
+
+                            {/* Title */}
+                            <button
+                              type="button"
+                              onClick={() => openSchoolModal(school.slug)}
+                              className="text-left cursor-pointer"
+                            >
+                              <h4 className="text-[17px] font-bold text-[#0F172A] hover:text-[#2563EB] transition-colors leading-snug">
+                                {school.schoolName}
+                              </h4>
+                            </button>
+
+                            {/* Location & Fee */}
+                            <div className="text-[12.5px] text-[#64748B] flex items-center gap-2 flex-wrap">
+                              <span className="flex items-center gap-1">
+                                <MapPin className="w-3.5 h-3.5 text-[#2563EB]" />
+                                {school.address || school.city}
+                              </span>
+                              <span>•</span>
+                              <span className="font-bold text-[#0F172A] flex items-center gap-0.5">
+                                <IndianRupee className="w-3.5 h-3.5 text-emerald-600" />
+                                {school.approxAnnualFeesInr}
+                              </span>
+                            </div>
+
+                            {/* Match Reasons List */}
+                            {matchReasons && matchReasons.length > 0 && (
+                              <div className="mt-2 pt-2 border-t border-slate-100 space-y-1">
+                                {matchReasons.map((reason, rIdx) => (
+                                  <div key={rIdx} className="text-[12px] text-slate-600 flex items-start gap-1.5">
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                                    <span>{reason}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Right CTA Buttons */}
+                        <div className="flex items-center gap-2 self-end md:self-center shrink-0 w-full md:w-auto justify-end pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
+                          <button
+                            type="button"
+                            onClick={() => toggleShortlist(school.slug)}
+                            className={`p-2 rounded-xl border text-[12px] font-semibold transition-colors cursor-pointer ${
+                              isSaved
+                                ? 'bg-[#E8F0FF] border-[#2563EB] text-[#2563EB]'
+                                : 'border-[#E2E8F0] text-slate-600 hover:bg-slate-50'
+                            }`}
+                            title={isSaved ? 'Saved in Shortlist' : 'Add to Shortlist'}
+                          >
+                            <BookmarkCheck className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => toggleCompare(school.slug)}
+                            className={`px-3 py-2 rounded-xl text-[12px] font-bold border transition-colors cursor-pointer ${
+                              isInCompare(school.slug)
+                                ? 'bg-[#E8F0FF] border-[#2563EB] text-[#2563EB]'
+                                : 'border-[#E2E8F0] text-[#64748B] hover:bg-[#F8FAFC]'
+                            }`}
+                          >
+                            {isInCompare(school.slug) ? 'In Compare' : 'Compare'}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => openSchoolModal(school.slug)}
+                            className="px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[12.5px] font-bold transition-all shadow-xs cursor-pointer"
+                          >
+                            View Details →
+                          </button>
+                        </div>
                       </div>
-
-                      {school.pros && (
-                        <p className="text-[12px] text-[#475569] line-clamp-1 italic">
-                          "{school.pros}"
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
-                    <button
-                      onClick={() => toggleCompare(school.slug)}
-                      className={`px-3 py-2 rounded-xl text-[12px] font-bold border transition-colors cursor-pointer ${
-                        isInCompare(school.slug)
-                          ? 'bg-[#E8F0FF] border-[#2563EB] text-[#2563EB]'
-                          : 'border-[#E2E8F0] text-[#64748B] hover:bg-[#F8FAFC]'
-                      }`}
-                    >
-                      {isInCompare(school.slug) ? 'In Compare' : 'Compare'}
-                    </button>
-                    <button
-                      onClick={() => openSchoolModal(school.slug)}
-                      className="px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[12.5px] font-bold transition-colors shadow-xs cursor-pointer"
-                    >
-                      View Details →
-                    </button>
-                  </div>
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
+
+                {/* View More Matches Button */}
+                <div className="mt-8 pt-4 text-center flex flex-col sm:flex-row items-center justify-center gap-3">
+                  {visibleCount < matchedResults.length ? (
+                    <button
+                      type="button"
+                      onClick={() => setVisibleCount((prev) => prev + 4)}
+                      className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[14px] font-bold shadow-md hover:scale-[1.02] transition-all cursor-pointer inline-flex items-center justify-center gap-2"
+                    >
+                      <span>View More Matches ({matchedResults.length - visibleCount} remaining)</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  ) : null}
+
+                  <Link
+                    href={`/schools?city=${encodeURIComponent(answers.city && answers.city !== 'All' ? answers.city : 'All')}&board=${encodeURIComponent(recommendedBoard !== 'All' ? recommendedBoard : '')}`}
+                    className="w-full sm:w-auto px-7 py-3.5 rounded-full border border-slate-300 hover:border-[#2563EB] bg-white text-slate-700 hover:text-[#2563EB] text-[14px] font-semibold transition-all cursor-pointer inline-flex items-center justify-center gap-2"
+                  >
+                    <span>Browse All {totalCandidates.toLocaleString('en-IN')} Schools in Directory</span>
+                    <Compass className="w-4 h-4" />
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <div className="bg-white rounded-2xl border border-[#E2E8F0] p-10 text-center">
+                <p className="text-[14px] text-slate-600">
+                  {errorMsg || 'No matching schools found for these specific criteria.'}
+                </p>
+                <button
+                  type="button"
+                  onClick={resetMatcher}
+                  className="mt-4 px-5 py-2 rounded-full bg-[#2563EB] text-white text-[13px] font-bold"
+                >
+                  Retake Quiz
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { SCHOOLS_DATA } from '@/data/schoolsData';
 import { School } from '@/types/school';
 import SchoolCard from '@/components/schools/SchoolCard';
+import CitySelectorGrid from '@/components/schools/CitySelectorGrid';
 import { useSchool } from '@/context/SchoolContext';
 import { 
   Search, 
@@ -15,7 +16,8 @@ import {
   Sparkles,
   BookmarkCheck,
   IndianRupee,
-  Loader2
+  Loader2,
+  Building2
 } from 'lucide-react';
 
 function SchoolsExplorerContent() {
@@ -46,54 +48,115 @@ function SchoolsExplorerContent() {
   // Live CMS schools list (initial fallback to bundled data)
   const [schoolsList, setSchoolsList] = useState<School[]>(() => {
     if (initialCity && initialCity !== 'All') {
-      const lower = initialCity.toLowerCase();
-      const initialMatches = SCHOOLS_DATA.filter((s) => s.city.toLowerCase().includes(lower));
+      const lower = initialCity.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const initialMatches = SCHOOLS_DATA.filter((s) => {
+        const sCity = s.city.toLowerCase().replace(/[^a-z0-9]/g, '');
+        return sCity.includes(lower) || lower.includes(sCity);
+      });
       return initialMatches.length > 0 ? initialMatches : SCHOOLS_DATA;
     }
     return SCHOOLS_DATA;
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [visibleCount, setVisibleCount] = useState<number>(36);
+  const [totalServerCount, setTotalServerCount] = useState<number>(5249);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
 
-  // Available cities from CMS database
+  // Available cities from CMS database matching landmark selector
   const cities = [
     'All',
     'Mumbai',
+    'Delhi-NCR',
     'Bengaluru',
-    'Delhi',
+    'Hyderabad',
+    'Chandigarh',
+    'Ahmedabad',
     'Pune',
     'Chennai',
+    'Kolkata',
+    'Kochi',
     'Jaipur',
     'Nashik',
     'Dehradun'
   ];
 
-  // Fetch schools for selected city from Wix CMS
+  // Live search across 5,249 schools in Wix CMS database
   useEffect(() => {
     let isCurrent = true;
     setIsLoading(true);
-    setVisibleCount(36);
 
-    fetch(`/api/schools?city=${encodeURIComponent(selectedCity)}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (!isCurrent) return;
-        if (data.schools && Array.isArray(data.schools) && data.schools.length > 0) {
-          registerSchools(data.schools);
-          setSchoolsList(data.schools);
-        }
-      })
-      .catch((err) => {
-        console.error('Failed to fetch schools for city:', err);
-      })
-      .finally(() => {
-        if (isCurrent) setIsLoading(false);
-      });
+    const debounceMs = searchQuery ? 350 : 0;
+    const handler = setTimeout(() => {
+      const params = new URLSearchParams();
+      if (selectedCity && selectedCity !== 'All') params.set('city', selectedCity);
+      if (selectedBoard && selectedBoard !== 'All') params.set('board', selectedBoard);
+      if (searchQuery.trim()) params.set('q', searchQuery.trim());
+      if (selectedGrade && selectedGrade !== 'All') params.set('grade', selectedGrade);
+      params.set('limit', selectedCity !== 'All' && !searchQuery.trim() && selectedBoard === 'All' ? '300' : '60');
+      params.set('offset', '0');
+
+      fetch(`/api/schools?${params.toString()}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (!isCurrent) return;
+          if (data.schools && Array.isArray(data.schools)) {
+            registerSchools(data.schools);
+            setSchoolsList(data.schools);
+            setTotalServerCount(typeof data.total === 'number' ? data.total : data.schools.length);
+            setHasMore(data.hasMore ?? (data.schools.length < data.total));
+            setVisibleCount(36);
+          }
+        })
+        .catch((err) => {
+          console.error('Failed to fetch schools from CMS:', err);
+        })
+        .finally(() => {
+          if (isCurrent) setIsLoading(false);
+        });
+    }, debounceMs);
 
     return () => {
       isCurrent = false;
+      clearTimeout(handler);
     };
-  }, [selectedCity, registerSchools]);
+  }, [selectedCity, selectedBoard, searchQuery, selectedGrade, registerSchools]);
+
+  const handleLoadMore = () => {
+    if (visibleCount + 36 <= schoolsList.length) {
+      setVisibleCount((prev) => prev + 36);
+      return;
+    }
+
+    // Load next batch from server if available
+    if (schoolsList.length < totalServerCount && !isLoadingMore) {
+      setIsLoadingMore(true);
+      const params = new URLSearchParams();
+      if (selectedCity && selectedCity !== 'All') params.set('city', selectedCity);
+      if (selectedBoard && selectedBoard !== 'All') params.set('board', selectedBoard);
+      if (searchQuery.trim()) params.set('q', searchQuery.trim());
+      if (selectedGrade && selectedGrade !== 'All') params.set('grade', selectedGrade);
+      params.set('limit', '60');
+      params.set('offset', schoolsList.length.toString());
+
+      fetch(`/api/schools?${params.toString()}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.schools && Array.isArray(data.schools) && data.schools.length > 0) {
+            registerSchools(data.schools);
+            setSchoolsList((prev) => [...prev, ...data.schools]);
+            setVisibleCount((prev) => prev + 36);
+            setHasMore(data.hasMore);
+          } else {
+            setHasMore(false);
+          }
+        })
+        .catch((err) => console.error('Error loading more schools:', err))
+        .finally(() => setIsLoadingMore(false));
+    } else {
+      setVisibleCount((prev) => prev + 36);
+    }
+  };
 
   const filteredSchools = useMemo(() => {
     return schoolsList.filter((school) => {
@@ -112,13 +175,31 @@ function SchoolsExplorerContent() {
 
       // City filter
       if (selectedCity !== 'All') {
-        const sLower = school.city.toLowerCase();
-        const selLower = selectedCity.toLowerCase();
-        const match =
-          sLower === selLower ||
-          sLower.includes(selLower) ||
-          ((selLower === 'bengaluru' || selLower === 'bangalore') && (sLower.includes('bangalore') || sLower.includes('bengaluru'))) ||
-          ((selLower === 'delhi' || selLower === 'delhi ncr') && (sLower.includes('delhi') || sLower.includes('gurugram') || sLower.includes('noida')));
+        const sLower = school.city.toLowerCase().trim();
+        const selLower = selectedCity.toLowerCase().trim();
+        
+        const isSelDelhi = selLower.includes('delhi') || selLower.includes('ncr');
+        const isSchoolDelhi = sLower.includes('delhi') || sLower.includes('gurugram') || sLower.includes('gurgaon') || sLower.includes('noida') || sLower.includes('ncr');
+        
+        const isSelBlr = selLower.includes('bengaluru') || selLower.includes('bangalore');
+        const isSchoolBlr = sLower.includes('bengaluru') || sLower.includes('bangalore');
+
+        const isSelKochi = selLower.includes('kochi') || selLower.includes('cochin');
+        const isSchoolKochi = sLower.includes('kochi') || sLower.includes('cochin');
+
+        let match = false;
+        if (isSelDelhi && isSchoolDelhi) {
+          match = true;
+        } else if (isSelBlr && isSchoolBlr) {
+          match = true;
+        } else if (isSelKochi && isSchoolKochi) {
+          match = true;
+        } else {
+          const sClean = sLower.replace(/[^a-z0-9]/g, '');
+          const selClean = selLower.replace(/[^a-z0-9]/g, '');
+          match = sLower === selLower || sLower.includes(selLower) || selLower.includes(sLower) || sClean === selClean || sClean.includes(selClean) || selClean.includes(sClean);
+        }
+
         if (!match) return false;
       }
 
@@ -182,23 +263,58 @@ function SchoolsExplorerContent() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-12 md:py-16 w-full overflow-hidden">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-12 md:py-16 w-full overflow-hidden">
       {/* Title & Page Header */}
-      <div className="mb-6 sm:mb-8">
+      <div className="mb-4 sm:mb-8">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E8F0FF] text-[#2563EB] text-[12px] font-bold uppercase tracking-wider mb-2">
           <Sparkles className="w-3.5 h-3.5 text-[#2563EB]" />
           Verified Database • Pan-India Directory
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight">
+        <h1 className="text-2xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight">
           Explore Schools in India
         </h1>
-        <p className="mt-2 text-[15px] text-[#64748B] max-w-2xl">
+        <p className="mt-1.5 sm:mt-2 text-[13.5px] sm:text-[15px] text-[#64748B] max-w-2xl">
           Search and compare verified schools across CBSE, ICSE, IB, and Cambridge IGCSE with accurate tuition fee ranges, curricula, and pros &amp; cons.
         </p>
       </div>
 
+      {/* ── CITY LANDMARK SELECTOR GRID ── */}
+      <div className="mb-4 sm:mb-8">
+        <div className="flex items-center justify-between mb-2 sm:mb-3 flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#0D9488]" />
+            <h2 className="text-[13px] font-bold uppercase tracking-wider text-[#475569]">
+              Search Schools by City
+            </h2>
+            {selectedCity !== 'All' && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11.5px] font-bold bg-[#F0FDFA] text-[#0D9488] border border-[#0D9488]/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#0D9488]" />
+                Selected: {selectedCity}
+              </span>
+            )}
+          </div>
+
+          {selectedCity !== 'All' && (
+            <button
+              onClick={() => setSelectedCity('All')}
+              className="text-[12px] font-semibold text-[#0D9488] hover:text-[#0F766E] flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              <span>Show All Cities</span>
+              <RotateCcw className="w-3 h-3" />
+            </button>
+          )}
+        </div>
+
+        <CitySelectorGrid
+          selectedCity={selectedCity}
+          onSelectCity={(city) => {
+            setSelectedCity(city);
+          }}
+        />
+      </div>
+
       {/* Search & Filter Toolbar */}
-      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-4 sm:p-6 shadow-xs mb-8">
+      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-3.5 sm:p-6 shadow-xs mb-4 sm:mb-8">
         {/* Main Search Input */}
         <div className="relative mb-5">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#94A3B8]" />
@@ -333,17 +449,17 @@ function SchoolsExplorerContent() {
       </div>
 
       {/* Results Header */}
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
+      <div className="flex items-center justify-between mb-3.5 sm:mb-6 flex-wrap gap-2">
         <h2 className="text-[15px] font-semibold text-[#64748B] flex items-center gap-2 flex-wrap">
           <span>
             Showing <span className="font-bold text-[#0F172A]">{Math.min(visibleCount, filteredSchools.length)}</span> of{' '}
-            <span className="font-bold text-[#0F172A]">{filteredSchools.length}</span> verified schools
-            {selectedCity !== 'All' ? ` in ${selectedCity}` : ''}
+            <span className="font-bold text-[#0F172A]">{totalServerCount.toLocaleString('en-IN')}</span> verified schools
+            {selectedCity !== 'All' ? ` in ${selectedCity}` : ' across India'}
           </span>
           {isLoading && (
             <span className="inline-flex items-center gap-1.5 text-[11.5px] text-[#2563EB] font-medium bg-[#E8F0FF] px-2.5 py-0.5 rounded-full">
               <Loader2 className="w-3 h-3 animate-spin text-[#2563EB]" />
-              Fetching from CMS...
+              Searching 5,200+ Database...
             </span>
           )}
         </h2>
@@ -352,19 +468,25 @@ function SchoolsExplorerContent() {
       {/* Schools Card Grid */}
       {filteredSchools.length > 0 ? (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
             {filteredSchools.slice(0, visibleCount).map((school) => (
               <SchoolCard key={school.id || school.slug} school={school} />
             ))}
           </div>
 
-          {filteredSchools.length > visibleCount && (
+          {(filteredSchools.length > visibleCount || schoolsList.length < totalServerCount) && (
             <div className="mt-10 sm:mt-12 text-center">
               <button
-                onClick={() => setVisibleCount((prev) => prev + 36)}
-                className="px-8 py-3.5 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[14px] font-bold shadow-md hover:scale-[1.02] transition-all cursor-pointer inline-flex items-center gap-2"
+                onClick={handleLoadMore}
+                disabled={isLoadingMore}
+                className="px-8 py-3.5 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[14px] font-bold shadow-md hover:scale-[1.02] transition-all cursor-pointer inline-flex items-center gap-2 disabled:opacity-70"
               >
-                <span>Load More Schools ({filteredSchools.length - visibleCount} remaining)</span>
+                {isLoadingMore && <Loader2 className="w-4 h-4 animate-spin text-white" />}
+                <span>
+                  {isLoadingMore
+                    ? 'Loading Schools from CMS...'
+                    : `Load More Schools (${Math.max(0, totalServerCount - Math.min(visibleCount, filteredSchools.length))} remaining)`}
+                </span>
               </button>
             </div>
           )}

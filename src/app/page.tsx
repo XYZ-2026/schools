@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import FeaturedSchoolsShowcase from '@/components/home/FeaturedSchoolsShowcase';
+import FaqAccordion from '@/components/home/FaqAccordion';
 import { 
   Compass, 
   BookOpen, 
@@ -259,7 +260,7 @@ export default function LandingPage() {
             Discover leading institutions by city, verified annual tuition, boarding campuses, and board affiliations.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 mt-8 sm:mt-12">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-5 mt-6 sm:mt-12">
             {[
               { code: "MUM", name: "Mumbai", count: "Top Rated Schools", desc: "DAIS, Cathedral, Bombay Scottish & Oberoi", city: "Mumbai" },
               { code: "BLR", name: "Bengaluru", count: "Leading Campuses", desc: "TISB, Greenwood High, Indus International & Mallya Aditi", city: "Bengaluru" },
@@ -273,29 +274,31 @@ export default function LandingPage() {
               <Link
                 key={item.code}
                 href={`/schools?city=${item.city}`}
-                className="group bg-white border border-[#E2E8F0] rounded-[16px] p-5 sm:p-6 hover:border-[#2563EB] hover:-translate-y-1 transition-all shadow-xs hover:shadow-md flex flex-col justify-between h-full min-h-[220px] cursor-pointer"
+                className="group bg-white border border-[#E2E8F0] rounded-xl sm:rounded-[16px] p-3 sm:p-6 hover:border-[#2563EB] hover:-translate-y-1 transition-all shadow-xs hover:shadow-md flex flex-col justify-between h-full min-h-0 sm:min-h-[220px] cursor-pointer"
               >
                 <div>
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="text-[12px] font-bold text-[#2563EB] bg-[#E8F0FF] px-2.5 py-1 rounded-full uppercase border border-[#BFDBFE]">
+                  <div className="flex justify-between items-center mb-2 sm:mb-3">
+                    <span className="text-[10px] sm:text-[12px] font-bold text-[#2563EB] bg-[#E8F0FF] px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full uppercase border border-[#BFDBFE]">
                       {item.code}
                     </span>
-                    <span className="text-[11px] font-semibold text-[#94A3B8]">
-                      Admissions 2026-27
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-[#94A3B8] hidden xs:inline sm:inline">
+                      2026-27
                     </span>
                   </div>
-                  <h3 className="text-[18px] font-bold text-[#0F172A] mb-1 leading-snug">
+                  <h3 className="text-[14px] sm:text-[18px] font-bold text-[#0F172A] mb-0.5 sm:mb-1 leading-snug truncate">
                     {item.name}
                   </h3>
-                  <div className="text-[12.5px] font-bold text-[#2563EB] mb-2">
+                  <div className="text-[11px] sm:text-[12.5px] font-bold text-[#2563EB] mb-1 sm:mb-2 truncate">
                     {item.count}
                   </div>
-                  <p className="text-[12.5px] text-[#64748B] leading-relaxed line-clamp-2">
+                  <p className="text-[10.5px] sm:text-[12.5px] text-[#64748B] leading-tight sm:leading-relaxed line-clamp-2">
                     {item.desc}
                   </p>
                 </div>
-                <div className="mt-4 pt-3 border-t border-[#F1F5F9] flex items-center gap-1 text-[12px] font-semibold text-[#2563EB] group-hover:translate-x-0.5 transition-transform">
-                  View Schools in {item.name} <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
+                <div className="mt-2.5 sm:mt-4 pt-2 sm:pt-3 border-t border-[#F1F5F9] flex items-center justify-between sm:justify-start gap-1 text-[11px] sm:text-[12px] font-semibold text-[#2563EB] group-hover:translate-x-0.5 transition-transform">
+                  <span className="hidden sm:inline">View Schools in {item.name}</span>
+                  <span className="sm:hidden">Explore</span>
+                  <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
                 </div>
               </Link>
             ))}
@@ -324,75 +327,82 @@ export default function LandingPage() {
         </div>
 
         {/* Features 6-Grid */}
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7 mt-10">
+        <div className="max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-7 mt-6 sm:mt-10">
           {[
             {
               icon: BookOpen,
-              title: "Curriculum Comparison Guide",
+              title: "Curriculum Comparison",
               desc: "Deep comparative breakdowns of IB DP, Cambridge IGCSE, ICSE, and CBSE syllabi, exam rigor, and college readiness.",
               link: "/curriculum-guide",
-              linkText: "Read Curriculum Guide"
+              linkText: "Read Curriculum Guide",
+              mobileLinkText: "Curriculum Guide"
             },
             {
               icon: Sparkles,
-              title: "AI Child Matcher Assessment",
+              title: "AI Child Matcher",
               desc: "60-second interactive questionnaire evaluating your child's learning temperament, budget, and future career pathway.",
               link: "/match",
-              linkText: "Take Matcher Quiz"
+              linkText: "Take Matcher Quiz",
+              mobileLinkText: "Matcher Quiz"
             },
             {
               icon: ArrowLeftRight,
-              title: "Side-by-Side School Comparison",
+              title: "Side-by-Side Compare",
               desc: "Compare up to 4 schools across tuition brackets, student-teacher ratios, sports amenities, and board pass rates.",
               link: "/compare",
-              linkText: "Launch Compare Tool"
+              linkText: "Launch Compare Tool",
+              mobileLinkText: "Compare Tool"
             },
             {
               icon: IndianRupee,
-              title: "Verified Fee Transparency",
+              title: "Fee Transparency",
               desc: "Authentic annual tuition schedules, boarding costs, and admission registration fees without hidden surprises.",
               link: "/schools",
-              linkText: "View Fee Structures"
+              linkText: "View Fee Structures",
+              mobileLinkText: "Fee Structure"
             },
             {
               icon: Award,
-              title: "Ivy League & College Placements",
+              title: "College Placements",
               desc: "Verified matriculation data for Stanford, Harvard, Oxford, Cambridge, IITs, and Ashoka University.",
               link: "/schools",
-              linkText: "Check Placements"
+              linkText: "Check Placements",
+              mobileLinkText: "Placements"
             },
             {
               icon: Building2,
-              title: "Direct Campus Tour Inquiries",
+              title: "Campus Tour Inquiries",
               desc: "Connect directly with official school admissions desks to schedule private walkthroughs and obtain brochures.",
               link: "/schools",
-              linkText: "Book School Visits"
+              linkText: "Book School Visits",
+              mobileLinkText: "Book Visits"
             },
           ].map((feat, i) => {
             const Icon = feat.icon;
             return (
               <div
                 key={i}
-                className="bg-white rounded-2xl border border-[#E2E8F0] p-6 sm:p-7 shadow-xs hover:border-[#2563EB]/40 hover:shadow-md transition-all flex flex-col justify-between"
+                className="bg-white rounded-xl sm:rounded-2xl border border-[#E2E8F0] p-3 sm:p-7 shadow-xs hover:border-[#2563EB]/40 hover:shadow-md transition-all flex flex-col justify-between"
               >
                 <div>
-                  <div className="w-11 h-11 rounded-xl bg-[#E8F0FF] text-[#2563EB] border border-[#BFDBFE] flex items-center justify-center mb-5">
-                    <Icon className="w-5 h-5" />
+                  <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-[#E8F0FF] text-[#2563EB] border border-[#BFDBFE] flex items-center justify-center mb-2.5 sm:mb-5">
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
-                  <h3 className="text-[18px] font-bold text-[#0F172A] mb-2 leading-snug">
+                  <h3 className="text-[13px] sm:text-[18px] font-bold text-[#0F172A] mb-1 sm:mb-2 leading-snug line-clamp-2">
                     {feat.title}
                   </h3>
-                  <p className="text-[13.5px] text-[#64748B] leading-relaxed">
+                  <p className="text-[10.5px] sm:text-[13.5px] text-[#64748B] leading-tight sm:leading-relaxed line-clamp-2 sm:line-clamp-none">
                     {feat.desc}
                   </p>
                 </div>
-                <div className="mt-6 pt-4 border-t border-[#F1F5F9]">
+                <div className="mt-2.5 sm:mt-6 pt-2 sm:pt-4 border-t border-[#F1F5F9]">
                   <Link
                     href={feat.link}
-                    className="text-[13px] font-bold text-[#2563EB] hover:underline flex items-center gap-1.5"
+                    className="text-[11px] sm:text-[13px] font-bold text-[#2563EB] hover:underline flex items-center justify-between sm:justify-start gap-1"
                   >
-                    <span>{feat.linkText}</span>
-                    <span>→</span>
+                    <span className="truncate hidden sm:inline">{feat.linkText}</span>
+                    <span className="truncate sm:hidden">{feat.mobileLinkText}</span>
+                    <span className="shrink-0">→</span>
                   </Link>
                 </div>
               </div>
@@ -515,50 +525,22 @@ export default function LandingPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════
-          8. FAQ SECTION — 2-Column Card Grid
+          8. FAQ SECTION — Collapsible Accordion Grid
           ═══════════════════════════════════════════════════════════ */}
-      <section id="faq" className="my-14 sm:my-20 max-w-7xl mx-auto px-4 sm:px-5 md:px-10">
-        <div className="text-center mb-12">
-          <div className="text-[#2563EB] text-[12px] tracking-[0.22em] font-bold uppercase mb-3">
+      <section id="faq" className="my-8 sm:my-20 max-w-7xl mx-auto px-4 sm:px-5 md:px-10">
+        <div className="text-center mb-6 sm:mb-12">
+          <div className="text-[#2563EB] text-[11px] sm:text-[12px] tracking-[0.22em] font-bold uppercase mb-2 sm:mb-3">
             FREQUENTLY ASKED QUESTIONS
           </div>
-          <h2 className="text-[26px] sm:text-[34px] md:text-[46px] font-bold text-[#0F172A] tracking-[-0.03em]">
+          <h2 className="text-[22px] sm:text-[34px] md:text-[46px] font-bold text-[#0F172A] tracking-[-0.03em]">
             Everything Parents Need to Know About School Admissions
           </h2>
-          <p className="mt-3 text-[#64748B] text-[15px] max-w-xl mx-auto">
+          <p className="mt-2 text-[#64748B] text-[13.5px] sm:text-[15px] max-w-xl mx-auto">
             Got questions about board differences, residential boarding, or admission timelines? We have answers.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[
-            {
-              q: "IB vs CBSE: Which is better for studying abroad vs Indian competitive exams?",
-              a: "If your child is aiming for Ivy League, UK Russell Group, or European universities, the IB Diploma or Cambridge IGCSE provides unmatched critical thinking, research essays, and college credits. If your goal is IIT-JEE, NEET, or CUET, CBSE provides exact 1-to-1 syllabus alignment with national entrance examinations."
-            },
-            {
-              q: "What is the realistic fee breakdown for premier international schools in India?",
-              a: "Annual tuition for top-tier day schools (DAIS, Cathedral, TISB, Heritage) ranges from ₹3.5 Lakhs to ₹12.5 Lakhs. Heritage residential boarding schools (The Doon School, Woodstock, Mayo College) range from ₹8.5 Lakhs to ₹21 Lakhs annually, which covers full boarding, dining, equestrian academies, and 24/7 pastoral care."
-            },
-            {
-              q: "At what age or grade should a child be admitted to a boarding school?",
-              a: "Premier heritage boarding schools admit boarders primarily from Grade 7 (approx. age 11–12) or Grade 8. Some schools offer admissions from Grade 4 or 5. Child developmental experts advise waiting until at least age 11, when children have built emotional resilience and self-reliance."
-            },
-            {
-              q: "When do admissions open for the 2026-2027 academic session?",
-              a: "For high-demand international schools like DAIS, Doon, TISB, and Cathedral, registrations open between July and September of the previous year. Assessments are conducted between October and January. Applications submitted after February are typically evaluated against waitlist availability."
-            }
-          ].map((item, i) => (
-            <div key={i} className="p-7 bg-white rounded-[16px] border border-[#E2E8F0] shadow-sm hover:border-[#2563EB]/40 transition-all">
-              <h3 className="text-[17px] font-bold text-[#0F172A] mb-3">
-                {item.q}
-              </h3>
-              <p className="text-[#64748B] text-[14px] leading-relaxed">
-                {item.a}
-              </p>
-            </div>
-          ))}
-        </div>
+        <FaqAccordion />
       </section>
 
       {/* ═══════════════════════════════════════════════════════════

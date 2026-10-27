@@ -63,7 +63,7 @@ export default function FeaturedSchoolsShowcase() {
       </div>
 
       {/* Grid of School Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-7 w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-7 w-full">
         {filteredSchools.map((school) => (
           <SchoolCard key={school.id} school={school} />
         ))}
