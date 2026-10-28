@@ -266,9 +266,9 @@ function SchoolsExplorerContent() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-12 md:py-16 w-full overflow-hidden">
       {/* Title & Page Header */}
       <div className="mb-4 sm:mb-8">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E8F0FF] text-[#2563EB] text-[12px] font-bold uppercase tracking-wider mb-2">
-          <Sparkles className="w-3.5 h-3.5 text-[#2563EB]" />
-          Verified Database • Pan-India Directory
+        <div className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-[#E8F0FF] text-[#2563EB] text-[10.5px] sm:text-[12px] font-bold uppercase tracking-wide sm:tracking-wider mb-2 whitespace-nowrap shadow-xs">
+          <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#2563EB] shrink-0" />
+          <span>Verified Database • Pan-India Directory</span>
         </div>
         <h1 className="text-2xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight">
           Explore Schools in India

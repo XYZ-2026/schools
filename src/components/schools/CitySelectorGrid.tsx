@@ -480,60 +480,73 @@ export default function CitySelectorGrid({
     return current === id || current === query || current.includes(id) || id.includes(current);
   };
 
-  return (
-    <div className={`w-full ${className}`}>
-      {/* 5 by 2 Grid container matching the user reference screenshot */}
-      <div className="bg-[#E2E8F0] p-px rounded-2xl border border-[#E2E8F0] shadow-xs overflow-hidden">
-        <div className="grid grid-cols-5 gap-px">
-          {CITIES_CONFIG.map((city) => {
-            const active = isCitySelected(city.id, city.queryValue);
-            return (
-              <button
-                key={city.id}
-                type="button"
-                onClick={() => {
-                  if (active) {
-                    onSelectCity('All');
-                  } else {
-                    onSelectCity(city.name);
-                  }
-                }}
-                className={`group relative py-2 sm:py-5 px-0.5 sm:px-5 flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer select-none focus:outline-none ${
-                  active 
-                    ? 'bg-[#F0FDFA]' 
-                    : 'bg-white hover:bg-[#F8FAFC]'
-                }`}
-                title={`Explore schools in ${city.name} (${city.landmark})`}
-                aria-pressed={active}
-              >
-                {/* Architectural Landmark Icon */}
-                <div className={`mb-1 sm:mb-3 transition-transform duration-200 ${active ? 'scale-105' : 'group-hover:scale-105'}`}>
-                  {getCityLandmarkIcon(city.id, active, "w-6 h-6 sm:w-11 sm:h-11")}
-                </div>
+  const topCities = CITIES_CONFIG.slice(0, 8);
+  const bottomCities = CITIES_CONFIG.slice(8, 10);
 
-                {/* City Name with Active Teal Dot */}
-                <div className="flex items-center justify-center gap-1 sm:gap-1.5 min-h-[16px] sm:min-h-[22px] max-w-full px-0.5">
-                  {active && (
-                    <span 
-                      className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#0D9488] shrink-0 animate-pulse" 
-                      aria-hidden="true" 
-                    />
-                  )}
-                  <span
-                    className={`text-[9.5px] sm:text-[13.5px] leading-tight truncate transition-colors ${
-                      active
-                        ? 'font-bold text-[#0F172A]'
-                        : 'font-medium text-[#475569] group-hover:text-[#0F172A]'
-                    }`}
-                  >
-                    {city.name}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
+  const renderCityButton = (city: CityOption) => {
+    const active = isCitySelected(city.id, city.queryValue);
+    return (
+      <button
+        key={city.id}
+        type="button"
+        onClick={() => {
+          if (active) {
+            onSelectCity('All');
+          } else {
+            onSelectCity(city.name);
+          }
+        }}
+        className={`group relative py-2.5 sm:py-5 px-1 sm:px-5 flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer select-none focus:outline-none touch-manipulation ${
+          active 
+            ? 'bg-[#F0FDFA]' 
+            : 'bg-white hover:bg-[#F8FAFC]'
+        }`}
+        title={`Explore schools in ${city.name} (${city.landmark})`}
+        aria-pressed={active}
+      >
+        {/* Architectural Landmark Icon */}
+        <div className={`mb-1 sm:mb-3 transition-transform duration-200 ${active ? 'scale-105' : 'group-hover:scale-105'}`}>
+          {getCityLandmarkIcon(city.id, active, "w-6 h-6 sm:w-11 sm:h-11")}
+        </div>
+
+        {/* City Name with Active Teal Dot */}
+        <div className="flex items-center justify-center gap-1 sm:gap-1.5 min-h-[16px] sm:min-h-[22px] max-w-full px-0.5">
+          {active && (
+            <span 
+              className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#0D9488] shrink-0 animate-pulse" 
+              aria-hidden="true" 
+            />
+          )}
+          <span
+            className={`text-[10px] sm:text-[13.5px] leading-tight truncate transition-colors ${
+              active
+                ? 'font-bold text-[#0F172A]'
+                : 'font-medium text-[#475569] group-hover:text-[#0F172A]'
+            }`}
+          >
+            {city.name}
+          </span>
+        </div>
+      </button>
+    );
+  };
+
+  return (
+    <div className={`w-full flex flex-col items-center ${className}`}>
+      {/* Top 2 rows: 4 columns max */}
+      <div className="w-full bg-[#E2E8F0] p-px rounded-2xl border border-[#E2E8F0] shadow-xs overflow-hidden">
+        <div className="grid grid-cols-4 gap-px">
+          {topCities.map((city) => renderCityButton(city))}
+        </div>
+      </div>
+
+      {/* Third row: the 2 remaining cities (Kolkata & Kochi) centered in the middle */}
+      <div className="w-1/2 bg-[#E2E8F0] px-px pb-px rounded-b-2xl border-x border-b border-[#E2E8F0] shadow-xs overflow-hidden -mt-px">
+        <div className="grid grid-cols-2 gap-px">
+          {bottomCities.map((city) => renderCityButton(city))}
         </div>
       </div>
     </div>
   );
 }
+
