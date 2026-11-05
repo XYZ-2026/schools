@@ -42,11 +42,13 @@ export async function generateMetadata({
       description,
       url: `https://schools.clarvo.in/schools/${school.slug}`,
       type: 'article',
+      images: school.heroImage ? [{ url: school.heroImage, alt: school.schoolName }] : undefined,
     },
     twitter: {
-      card: 'summary',
+      card: school.heroImage ? 'summary_large_image' : 'summary',
       title,
       description,
+      images: school.heroImage ? [school.heroImage] : undefined,
     },
   };
 }
@@ -79,6 +81,7 @@ export default async function SchoolPage({
             name: school.schoolName,
             description: `${school.schoolName} offers ${school.board} curriculum for grades ${school.grades} in ${school.city}.`,
             url: `https://schools.clarvo.in/schools/${school.slug}`,
+            ...(school.heroImage ? { image: school.heroImage } : {}),
             address: school.address
               ? {
                   '@type': 'PostalAddress',

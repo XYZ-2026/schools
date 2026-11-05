@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { fetchWixSchoolsByCity, searchWixSchools, getSchoolBySlug } from '@/lib/wix';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET(request: NextRequest) {
   try {
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Comprehensive multi-field query across 5,249 schools in Wix CMS
+    // Live multi-field query across verified schools in Wix CMS
     const { schools, total, hasMore } = await searchWixSchools({
       city,
       board,

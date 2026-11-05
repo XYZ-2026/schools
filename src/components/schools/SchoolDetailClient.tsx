@@ -43,6 +43,11 @@ export default function SchoolDetailClient({ school }: SchoolDetailClientProps) 
 
   const comparing = isInCompare(school.slug);
   const shortlisted = isInShortlist(school.slug);
+  const [imgSrc, setImgSrc] = useState<string>(() => getSchoolImage(school));
+
+  React.useEffect(() => {
+    setImgSrc(getSchoolImage(school));
+  }, [school]);
 
   const prosList = school.pros ? school.pros.split(';').map((p) => p.trim()).filter(Boolean) : [];
   const consList = school.cons ? school.cons.split(';').map((c) => c.trim()).filter(Boolean) : [];
@@ -57,12 +62,13 @@ export default function SchoolDetailClient({ school }: SchoolDetailClientProps) 
       {/* Top Banner / Header */}
       <div className="relative min-h-[340px] sm:min-h-[400px] w-full bg-slate-950 text-white py-12 sm:py-16 px-4 sm:px-6 lg:px-8 border-b border-[#E2E8F0] overflow-hidden flex flex-col justify-between">
         <Image
-          src={getSchoolImage(school)}
+          src={imgSrc}
           alt={school.schoolName}
           fill
           priority
           sizes="100vw"
           className="object-cover opacity-35"
+          onError={() => setImgSrc('https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=1200&q=80')}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/60 to-slate-950/40" />
 

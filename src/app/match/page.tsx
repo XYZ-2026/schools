@@ -115,7 +115,7 @@ const QUESTIONS: MatcherQuestion[] = [
       },
       {
         label: 'All India (Relocating / Open to Any Location)',
-        description: 'Search across 5,200+ verified schools across all major Indian cities.',
+        description: 'Search across all verified schools across all major Indian cities.',
         value: 'All',
       },
     ],
@@ -226,11 +226,11 @@ function MatcherContent() {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isCalculating, setIsCalculating] = useState(false);
-  const [calculationStage, setCalculationStage] = useState('Querying 5,200+ schools in database...');
+  const [calculationStage, setCalculationStage] = useState('Querying verified schools in database...');
   const [completed, setCompleted] = useState(false);
   const [matchedResults, setMatchedResults] = useState<MatchedSchoolItem[]>([]);
   const [recommendedBoard, setRecommendedBoard] = useState('CBSE');
-  const [totalCandidates, setTotalCandidates] = useState(5249);
+  const [totalCandidates, setTotalCandidates] = useState(0);
   const [errorMsg, setErrorMsg] = useState('');
   const [visibleCount, setVisibleCount] = useState<number>(4);
 
@@ -249,7 +249,7 @@ function MatcherContent() {
       setErrorMsg('');
 
       try {
-        setCalculationStage('Filtering 5,200+ schools by location and board...');
+        setCalculationStage('Filtering verified schools by location and board...');
 
         // Map answers to API parameters
         const cityPref = updatedAnswers.city || 'All';
@@ -287,7 +287,7 @@ function MatcherContent() {
         if (data.matchedSchools && Array.isArray(data.matchedSchools) && data.matchedSchools.length > 0) {
           setMatchedResults(data.matchedSchools);
           setRecommendedBoard(data.topBoard || targetBoard || 'CBSE');
-          setTotalCandidates(data.totalCandidates || 5249);
+          setTotalCandidates(data.totalCandidates || data.matchedSchools.length);
         } else {
           setErrorMsg('No exact schools matched your filters. Broadening search to all regions.');
         }
@@ -324,7 +324,7 @@ function MatcherContent() {
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E8F0FF] text-[#2563EB] text-[12px] font-bold uppercase tracking-wider mb-2">
           <Sparkles className="w-3.5 h-3.5 text-[#2563EB]" />
-          Intelligent AI Matcher • 5,200+ Database
+          Intelligent AI Matcher • Live Verified Database
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0F172A] tracking-tight">
           Find Your Child's Ideal School &amp; Board
@@ -416,7 +416,7 @@ function MatcherContent() {
           <h3 className="text-2xl font-extrabold text-[#0F172A]">Cross-Referencing Verified Schools...</h3>
           <p className="text-[14px] text-[#2563EB] font-semibold mt-2 animate-pulse">{calculationStage}</p>
           <p className="text-[12.5px] text-[#64748B] mt-1">
-            Analyzing 5,200+ institutions across India based on your fee budget, board, and location preferences.
+            Analyzing verified institutions across India based on your fee budget, board, and location preferences.
           </p>
         </div>
       ) : (
@@ -526,7 +526,7 @@ function MatcherContent() {
                             {/* Title */}
                             <button
                               type="button"
-                              onClick={() => openSchoolModal(school.slug)}
+                              onClick={() => openSchoolModal(school.slug, school)}
                               className="text-left cursor-pointer"
                             >
                               <h4 className="text-[17px] font-bold text-[#0F172A] hover:text-[#2563EB] transition-colors leading-snug">
@@ -590,7 +590,7 @@ function MatcherContent() {
 
                           <button
                             type="button"
-                            onClick={() => openSchoolModal(school.slug)}
+                            onClick={() => openSchoolModal(school.slug, school)}
                             className="px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[12.5px] font-bold transition-all shadow-xs cursor-pointer"
                           >
                             View Details →

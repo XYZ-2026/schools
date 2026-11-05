@@ -132,17 +132,18 @@ export default function ComparePage() {
                         <span className="inline-block px-2 py-0.5 rounded text-[11px] font-bold bg-[#2563EB] text-white mb-1.5">
                           {school.board}
                         </span>
-                        <a
-                          href={`/schools/${school.slug}`}
+                        <div
                           onClick={(e) => {
                             e.preventDefault();
-                            openSchoolModal(school.slug);
+                            e.stopPropagation();
+                            openSchoolModal(school.slug, school);
                           }}
+                          className="cursor-pointer"
                         >
-                          <h4 className="text-[16px] font-bold text-[#0F172A] leading-snug hover:text-[#2563EB] transition-colors line-clamp-2 cursor-pointer">
+                          <h4 className="text-[16px] font-bold text-[#0F172A] leading-snug hover:text-[#2563EB] transition-colors line-clamp-2">
                             {school.schoolName}
                           </h4>
-                        </a>
+                        </div>
                         <div className="text-[12px] text-[#64748B] mt-1 flex items-center gap-1">
                           <MapPin className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />
                           <span className="line-clamp-1">{school.address}</span>
@@ -293,7 +294,8 @@ export default function ComparePage() {
                 {comparedSchools.map((s) => (
                   <td key={s?.id} className="p-4 sm:p-5">
                     <button
-                      onClick={() => s?.slug && openSchoolModal(s.slug)}
+                      type="button"
+                      onClick={() => s?.slug && openSchoolModal(s.slug, s)}
                       className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-[13px] shadow-xs transition-colors cursor-pointer"
                     >
                       <span>View Full Profile</span>

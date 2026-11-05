@@ -75,7 +75,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="bg-white text-[#080F1C] min-h-screen flex flex-col antialiased font-[Inter,sans-serif]">
+      <body suppressHydrationWarning className="bg-white text-[#080F1C] min-h-screen flex flex-col antialiased font-[Inter,sans-serif]">
         {/* JSON-LD: WebSite structured data for sitelinks & search */}
         <script
           type="application/ld+json"

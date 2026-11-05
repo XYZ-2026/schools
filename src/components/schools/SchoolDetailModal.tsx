@@ -39,6 +39,7 @@ export default function SchoolDetailModal() {
   const [inquiryModalOpen, setInquiryModalOpen] = useState(false);
   const [inquirySubmitted, setInquirySubmitted] = useState(false);
   const [asyncSchool, setAsyncSchool] = useState<import('@/types/school').School | null>(null);
+  const [imgSrc, setImgSrc] = useState<string>('');
 
   // Form states
   const [parentName, setParentName] = useState('');
@@ -46,26 +47,42 @@ export default function SchoolDetailModal() {
   const [phone, setPhone] = useState('');
   const [childGrade, setChildGrade] = useState('Grade 1');
 
+  const school = activeSchoolSlug ? (getSchoolBySlug(activeSchoolSlug) || asyncSchool) : null;
+  const fallbackImg = school ? getSchoolImage(school) : 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=1200&q=80';
+  const displayImage = imgSrc || fallbackImg;
+
+  // Sync image source whenever school changes
+  useEffect(() => {
+    if (school) {
+      setImgSrc(getSchoolImage(school));
+    } else {
+      setImgSrc('');
+    }
+  }, [school?.slug]);
+
   // Fetch school from CMS if not in cache
   useEffect(() => {
-    if (activeSchoolSlug) {
-      const cached = getSchoolBySlug(activeSchoolSlug);
-      if (cached) {
-        setAsyncSchool(cached);
-      } else {
-        fetch(`/api/schools?slug=${encodeURIComponent(activeSchoolSlug)}`)
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.school) {
-              registerSchools([data.school]);
-              setAsyncSchool(data.school);
-            }
-          })
-          .catch(() => {});
-      }
-    } else {
+    if (!activeSchoolSlug) {
       setAsyncSchool(null);
+      return;
     }
+    const cached = getSchoolBySlug(activeSchoolSlug);
+    if (cached) {
+      return;
+    }
+    let isCurrent = true;
+    fetch(`/api/schools?slug=${encodeURIComponent(activeSchoolSlug)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (isCurrent && data.school) {
+          registerSchools([data.school]);
+          setAsyncSchool(data.school);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      isCurrent = false;
+    };
   }, [activeSchoolSlug, getSchoolBySlug, registerSchools]);
 
   // Listen for Escape key
@@ -83,15 +100,11 @@ export default function SchoolDetailModal() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [inquiryModalOpen, closeSchoolModal]);
 
-  if (!activeSchoolSlug) return null;
-
-  const school = getSchoolBySlug(activeSchoolSlug) || asyncSchool;
-  if (!school) return null;
+  // Only return null AFTER all hooks have unconditionally run
+  if (!activeSchoolSlug || !school) return null;
 
   const comparing = isInCompare(school.slug);
   const shortlisted = isInShortlist(school.slug);
-  const imageUrl = getSchoolImage(school);
-
   const prosList = school.pros ? school.pros.split(';').map((p) => p.trim()).filter(Boolean) : [];
   const consList = school.cons ? school.cons.split(';').map((c) => c.trim()).filter(Boolean) : [];
 
@@ -120,12 +133,13 @@ export default function SchoolDetailModal() {
             ═══════════════════════════════════════════════════════════ */}
         <div className="relative h-56 sm:h-72 w-full shrink-0 overflow-hidden bg-slate-950 text-white flex flex-col justify-between p-4 sm:p-6 md:p-8">
           <Image
-            src={imageUrl}
+            src={displayImage}
             alt={school.schoolName}
             fill
             priority
             sizes="(max-width: 1024px) 100vw, 896px"
             className="object-cover opacity-45"
+            onError={() => setImgSrc('https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&w=1200&q=80')}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/50 to-slate-950/30" />
 

@@ -489,6 +489,7 @@ export default function CitySelectorGrid({
       <button
         key={city.id}
         type="button"
+        suppressHydrationWarning
         onClick={() => {
           if (active) {
             onSelectCity('All');

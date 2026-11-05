@@ -1,7 +1,8 @@
 import { MetadataRoute } from 'next';
 import { SCHOOLS_DATA } from '@/data/schoolsData';
+import { fetchWixSchools } from '@/lib/wix';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://schools.clarvo.in';
 
   // Static pages
@@ -26,10 +27,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.6,
     },
+    {
+      url: `${baseUrl}/match`,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
   ];
 
+  // Fetch live schools from database (with fallback to bundled dataset)
+  let schools = SCHOOLS_DATA;
+  try {
+    const liveSchools = await fetchWixSchools();
+    if (liveSchools && liveSchools.length > 0) {
+      schools = liveSchools;
+    }
+  } catch (err) {
+    console.warn('Sitemap fallback to bundled schools:', err);
+  }
+
   // Individual school pages
-  const schoolPages: MetadataRoute.Sitemap = SCHOOLS_DATA.map((school) => ({
+  const schoolPages: MetadataRoute.Sitemap = schools.map((school) => ({
     url: `${baseUrl}/schools/${school.slug}`,
     changeFrequency: 'monthly' as const,
     priority: 0.8,

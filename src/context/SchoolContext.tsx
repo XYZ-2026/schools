@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { School } from '@/types/school';
 import { SCHOOLS_DATA } from '@/data/schoolsData';
 
@@ -16,7 +16,7 @@ interface SchoolContextType {
   getSchoolBySlug: (slug: string) => School | undefined;
   registerSchools: (schools: School[]) => void;
   activeSchoolSlug: string | null;
-  openSchoolModal: (slug: string) => void;
+  openSchoolModal: (slug: string, schoolData?: School) => void;
   closeSchoolModal: () => void;
 }
 
@@ -27,6 +27,7 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
   const [shortlist, setShortlist] = useState<string[]>([]);
   const [activeSchoolSlug, setActiveSchoolSlug] = useState<string | null>(null);
   const previousPathRef = useRef<string | null>(null);
+  const dynamicSchoolsRef = useRef<Map<string, School>>(new Map());
 
   useEffect(() => {
     try {
@@ -78,27 +79,19 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
     }
   }, [activeSchoolSlug]);
 
-  const openSchoolModal = (slug: string) => {
+  const openSchoolModal = useCallback((slug: string, schoolData?: School) => {
+    if (schoolData) {
+      dynamicSchoolsRef.current.set(slug, schoolData);
+      if (schoolData.id) dynamicSchoolsRef.current.set(schoolData.id, schoolData);
+    }
     setActiveSchoolSlug(slug);
-    if (typeof window !== 'undefined') {
-      if (!previousPathRef.current) {
-        previousPathRef.current = window.location.pathname + window.location.search;
-      }
-      // Update the URL so the slug dynamically changes
-      window.history.pushState({ modalOpen: true, slug }, '', `/schools/${slug}`);
-    }
-  };
+  }, []);
 
-  const closeSchoolModal = () => {
+  const closeSchoolModal = useCallback(() => {
     setActiveSchoolSlug(null);
-    if (typeof window !== 'undefined') {
-      const returnPath = previousPathRef.current || '/schools';
-      previousPathRef.current = null;
-      window.history.pushState(null, '', returnPath);
-    }
-  };
+  }, []);
 
-  const toggleCompare = (slug: string) => {
+  const toggleCompare = useCallback((slug: string) => {
     setCompareList((prev) => {
       let updated: string[];
       if (prev.includes(slug)) {
@@ -115,9 +108,9 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
       } catch {}
       return updated;
     });
-  };
+  }, []);
 
-  const removeFromCompare = (slug: string) => {
+  const removeFromCompare = useCallback((slug: string) => {
     setCompareList((prev) => {
       const updated = prev.filter((s) => s !== slug);
       try {
@@ -125,18 +118,18 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
       } catch {}
       return updated;
     });
-  };
+  }, []);
 
-  const clearCompare = () => {
+  const clearCompare = useCallback(() => {
     setCompareList([]);
     try {
       localStorage.removeItem('schools_compare');
     } catch {}
-  };
+  }, []);
 
-  const isInCompare = (slug: string) => compareList.includes(slug);
+  const isInCompare = useCallback((slug: string) => compareList.includes(slug), [compareList]);
 
-  const toggleShortlist = (slug: string) => {
+  const toggleShortlist = useCallback((slug: string) => {
     setShortlist((prev) => {
       const updated = prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug];
       try {
@@ -144,41 +137,56 @@ export function SchoolProvider({ children }: { children: React.ReactNode }) {
       } catch {}
       return updated;
     });
-  };
+  }, []);
 
-  const dynamicSchoolsRef = useRef<Map<string, School>>(new Map());
+  const isInShortlist = useCallback((slug: string) => shortlist.includes(slug), [shortlist]);
 
-  const registerSchools = (schools: School[]) => {
+  const registerSchools = useCallback((schools: School[]) => {
     schools.forEach((s) => {
       dynamicSchoolsRef.current.set(s.slug, s);
       if (s.id) dynamicSchoolsRef.current.set(s.id, s);
     });
-  };
+  }, []);
 
-  const isInShortlist = (slug: string) => shortlist.includes(slug);
-
-  const getSchoolBySlug = (slug: string) => {
+  const getSchoolBySlug = useCallback((slug: string) => {
     return dynamicSchoolsRef.current.get(slug) || SCHOOLS_DATA.find((s) => s.slug === slug);
-  };
+  }, []);
+
+  const contextValue = useMemo<SchoolContextType>(
+    () => ({
+      compareList,
+      toggleCompare,
+      removeFromCompare,
+      clearCompare,
+      isInCompare,
+      shortlist,
+      toggleShortlist,
+      isInShortlist,
+      getSchoolBySlug,
+      registerSchools,
+      activeSchoolSlug,
+      openSchoolModal,
+      closeSchoolModal,
+    }),
+    [
+      compareList,
+      toggleCompare,
+      removeFromCompare,
+      clearCompare,
+      isInCompare,
+      shortlist,
+      toggleShortlist,
+      isInShortlist,
+      getSchoolBySlug,
+      registerSchools,
+      activeSchoolSlug,
+      openSchoolModal,
+      closeSchoolModal,
+    ]
+  );
 
   return (
-    <SchoolContext.Provider
-      value={{
-        compareList,
-        toggleCompare,
-        removeFromCompare,
-        clearCompare,
-        isInCompare,
-        shortlist,
-        toggleShortlist,
-        isInShortlist,
-        getSchoolBySlug,
-        registerSchools,
-        activeSchoolSlug,
-        openSchoolModal,
-        closeSchoolModal,
-      }}
-    >
+    <SchoolContext.Provider value={contextValue}>
       {children}
     </SchoolContext.Provider>
   );

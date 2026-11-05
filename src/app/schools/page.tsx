@@ -59,7 +59,7 @@ function SchoolsExplorerContent() {
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [visibleCount, setVisibleCount] = useState<number>(36);
-  const [totalServerCount, setTotalServerCount] = useState<number>(5249);
+  const [totalServerCount, setTotalServerCount] = useState<number>(() => SCHOOLS_DATA.length);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
 
@@ -81,7 +81,7 @@ function SchoolsExplorerContent() {
     'Dehradun'
   ];
 
-  // Live search across 5,249 schools in Wix CMS database
+  // Live search across verified schools in Wix CMS database
   useEffect(() => {
     let isCurrent = true;
     setIsLoading(true);
@@ -296,6 +296,8 @@ function SchoolsExplorerContent() {
 
           {selectedCity !== 'All' && (
             <button
+              type="button"
+              suppressHydrationWarning
               onClick={() => setSelectedCity('All')}
               className="text-[12px] font-semibold text-[#0D9488] hover:text-[#0F766E] flex items-center gap-1 cursor-pointer transition-colors"
             >
@@ -320,6 +322,7 @@ function SchoolsExplorerContent() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#94A3B8]" />
           <input
             type="text"
+            suppressHydrationWarning
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by school name, board (CBSE, IB, ICSE), location, or alumni..."
@@ -327,6 +330,8 @@ function SchoolsExplorerContent() {
           />
           {searchQuery && (
             <button
+              type="button"
+              suppressHydrationWarning
               onClick={() => setSearchQuery('')}
               className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[12px] font-semibold text-[#64748B] hover:text-[#0F172A]"
             >
@@ -426,6 +431,8 @@ function SchoolsExplorerContent() {
         <div className="mt-4 pt-4 border-t border-[#F1F5F9] flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2 flex-wrap">
             <button
+              type="button"
+              suppressHydrationWarning
               onClick={() => setOnlySaved(!onlySaved)}
               className={`px-3 py-1 rounded-full text-[12px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
                 onlySaved
@@ -439,6 +446,8 @@ function SchoolsExplorerContent() {
           </div>
 
           <button
+            type="button"
+            suppressHydrationWarning
             onClick={resetFilters}
             className="text-[12px] text-[#64748B] hover:text-[#2563EB] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
           >
@@ -459,7 +468,7 @@ function SchoolsExplorerContent() {
           {isLoading && (
             <span className="inline-flex items-center gap-1.5 text-[11.5px] text-[#2563EB] font-medium bg-[#E8F0FF] px-2.5 py-0.5 rounded-full">
               <Loader2 className="w-3 h-3 animate-spin text-[#2563EB]" />
-              Searching 5,200+ Database...
+              Searching Database...
             </span>
           )}
         </h2>
@@ -477,6 +486,8 @@ function SchoolsExplorerContent() {
           {(filteredSchools.length > visibleCount || schoolsList.length < totalServerCount) && (
             <div className="mt-10 sm:mt-12 text-center">
               <button
+                type="button"
+                suppressHydrationWarning
                 onClick={handleLoadMore}
                 disabled={isLoadingMore}
                 className="px-8 py-3.5 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[14px] font-bold shadow-md hover:scale-[1.02] transition-all cursor-pointer inline-flex items-center gap-2 disabled:opacity-70"
@@ -501,6 +512,8 @@ function SchoolsExplorerContent() {
             Try relaxing your search terms or resetting filters to browse all verified schools.
           </p>
           <button
+            type="button"
+            suppressHydrationWarning
             onClick={resetFilters}
             className="mt-4 px-4 py-2 rounded-full bg-[#2563EB] text-white text-[13px] font-bold hover:bg-[#1D4ED8] transition-colors shadow-xs"
           >

@@ -39,13 +39,18 @@ export default function SchoolCard({ school }: SchoolCardProps) {
   const comparing = isInCompare(school.slug);
   const shortlisted = isInShortlist(school.slug);
   const imageUrl = getSchoolImage(school);
+  const [imgSrc, setImgSrc] = React.useState<string>(imageUrl);
+
+  React.useEffect(() => {
+    setImgSrc(imageUrl);
+  }, [imageUrl]);
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Only open modal if not clicking compare or shortlist button
     const target = e.target as HTMLElement;
     if (target.closest('button')) return;
     e.preventDefault();
-    openSchoolModal(school.slug);
+    openSchoolModal(school.slug, school);
   };
 
   return (
@@ -56,11 +61,20 @@ export default function SchoolCard({ school }: SchoolCardProps) {
       {/* ── LEFT (MOBILE) / TOP (DESKTOP) MEDIA ── */}
       <div className="relative w-24 h-24 sm:w-full sm:h-52 rounded-xl sm:rounded-none overflow-hidden shrink-0 bg-slate-100">
         <Image
-          src={imageUrl}
+          src={imgSrc}
           alt={school.schoolName}
           fill
           sizes="(max-width: 640px) 96px, (max-width: 1024px) 50vw, 33vw"
           className="object-cover group-hover:scale-105 transition-transform duration-500"
+          onError={() => {
+            let hash = 0;
+            for (let i = 0; i < school.schoolName.length; i++) {
+              hash = (hash << 5) - hash + school.schoolName.charCodeAt(i);
+              hash |= 0;
+            }
+            const fallbackIdx = Math.abs(hash) % SCHOOL_IMAGES.length;
+            setImgSrc(SCHOOL_IMAGES[fallbackIdx]);
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
 
@@ -78,6 +92,7 @@ export default function SchoolCard({ school }: SchoolCardProps) {
         <div className="absolute top-1.5 right-1.5 sm:top-3 sm:right-3 flex items-center gap-1.5">
           <button
             type="button"
+            suppressHydrationWarning
             onClick={(e) => {
               e.stopPropagation();
               toggleShortlist(school.slug);
@@ -118,17 +133,18 @@ export default function SchoolCard({ school }: SchoolCardProps) {
           </div>
 
           {/* School Name */}
-          <a 
-            href={`/schools/${school.slug}`}
+          <div 
             onClick={(e) => {
               e.preventDefault();
-              openSchoolModal(school.slug);
+              e.stopPropagation();
+              openSchoolModal(school.slug, school);
             }}
+            className="cursor-pointer"
           >
             <h3 className="text-[14.5px] sm:text-[18px] font-bold text-[#0F172A] leading-snug group-hover:text-[#2563EB] transition-colors line-clamp-2 sm:line-clamp-1 mb-1 sm:mb-0">
               {school.schoolName}
             </h3>
-          </a>
+          </div>
 
           {/* Desktop Strengths / Pros snippet */}
           <p className="hidden sm:block text-[12.5px] text-[#667085] line-clamp-2 mt-1 mb-3 leading-relaxed">
@@ -169,10 +185,11 @@ export default function SchoolCard({ school }: SchoolCardProps) {
 
           <button
             type="button"
+            suppressHydrationWarning
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              openSchoolModal(school.slug);
+              openSchoolModal(school.slug, school);
             }}
             className="text-[11.5px] font-bold text-[#2563EB] hover:text-[#1D4ED8] flex items-center gap-0.5 cursor-pointer shrink-0"
           >
@@ -187,6 +204,7 @@ export default function SchoolCard({ school }: SchoolCardProps) {
         {/* Compare Checkbox Button */}
         <button
           type="button"
+          suppressHydrationWarning
           onClick={(e) => {
             e.stopPropagation();
             toggleCompare(school.slug);
@@ -208,10 +226,11 @@ export default function SchoolCard({ school }: SchoolCardProps) {
         {/* View Profile Button */}
         <button
           type="button"
+          suppressHydrationWarning
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            openSchoolModal(school.slug);
+            openSchoolModal(school.slug, school);
           }}
           className="h-9 px-2 text-[12.5px] font-bold text-[#2563EB] hover:text-[#1D4ED8] flex items-center gap-1 group/btn cursor-pointer shrink-0 whitespace-nowrap"
         >

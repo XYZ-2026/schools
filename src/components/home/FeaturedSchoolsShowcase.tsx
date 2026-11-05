@@ -1,15 +1,35 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { SCHOOLS_DATA } from '@/data/schoolsData';
+import { School } from '@/types/school';
 import SchoolCard from '@/components/schools/SchoolCard';
 import { ArrowRight, Sparkles } from 'lucide-react';
 
-export default function FeaturedSchoolsShowcase() {
+interface FeaturedSchoolsShowcaseProps {
+  initialSchools?: School[];
+}
+
+export default function FeaturedSchoolsShowcase({ initialSchools }: FeaturedSchoolsShowcaseProps) {
+  const [schools, setSchools] = useState<School[]>(() => initialSchools || SCHOOLS_DATA);
   const [activeTab, setActiveTab] = useState<string>('All');
 
-  const filteredSchools = SCHOOLS_DATA.filter((school) => {
+  // Keep showcase fresh from live CMS database automatically
+  useEffect(() => {
+    fetch('/api/schools?limit=36')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.schools && Array.isArray(data.schools) && data.schools.length > 0) {
+          setSchools(data.schools);
+        }
+      })
+      .catch((err) => {
+        console.warn('Could not refresh featured schools from API:', err);
+      });
+  }, []);
+
+  const filteredSchools = schools.filter((school) => {
     if (activeTab === 'All') return true;
     const b = school.board.toLowerCase();
     const pb = school.primaryBoard.toLowerCase();
@@ -48,6 +68,8 @@ export default function FeaturedSchoolsShowcase() {
             {tabs.map((tab) => (
               <button
                 key={tab.value}
+                type="button"
+                suppressHydrationWarning
                 onClick={() => setActiveTab(tab.value)}
                 className={`px-3.5 py-1.5 sm:py-2 rounded-full text-[12.5px] sm:text-[13px] font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
                   activeTab === tab.value

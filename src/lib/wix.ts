@@ -141,6 +141,36 @@ export function getCityQueryValues(city: string): string[] {
   return [c];
 }
 
+export function formatWixImageUrl(wixMediaUrl?: unknown): string | undefined {
+  if (!wixMediaUrl || typeof wixMediaUrl !== 'string') return undefined;
+  const trimmed = wixMediaUrl.trim();
+  if (!trimmed) return undefined;
+
+  // Direct HTTP/HTTPS or relative URL
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('/')) {
+    return trimmed;
+  }
+
+  // Wix media URI: wix:image://v1/<fileId>/<fileName>#originWidth=<w>&originHeight=<h>
+  if (trimmed.startsWith('wix:image://v1/')) {
+    const afterPrefix = trimmed.replace('wix:image://v1/', '');
+    const fileId = afterPrefix.split('/')[0];
+    if (fileId) {
+      return `https://static.wixstatic.com/media/${fileId}`;
+    }
+  }
+
+  // Any other wix:image:// URI
+  if (trimmed.startsWith('wix:image://')) {
+    const match = trimmed.match(/wix:image:\/\/(?:v\d+\/)?([^/#]+)/);
+    if (match && match[1]) {
+      return `https://static.wixstatic.com/media/${match[1]}`;
+    }
+  }
+
+  return undefined;
+}
+
 export function normalizeWixSchool(raw: Record<string, unknown>, index = 0): School {
   const schoolName = String(raw.schoolName || raw.name || 'Unnamed School').trim();
   const baseSlug = slugify(schoolName);
@@ -161,8 +191,9 @@ export function normalizeWixSchool(raw: Record<string, unknown>, index = 0): Sch
   const pros = String(raw.pros || '').trim();
   const cons = String(raw.cons || '').trim();
   const notableAlumniAchievements = String(raw.notableAlumniAchievements || '').trim();
+  const heroImage = formatWixImageUrl(raw.image || raw.heroImage || raw.imageUrl || raw.photo || raw.images);
 
-  return {
+  const school: School = {
     id: rawId || slug,
     slug,
     schoolName,
@@ -182,6 +213,12 @@ export function normalizeWixSchool(raw: Record<string, unknown>, index = 0): Sch
     cons,
     notableAlumniAchievements,
   };
+
+  if (heroImage) {
+    school.heroImage = heroImage;
+  }
+
+  return school;
 }
 
 /**
@@ -227,7 +264,7 @@ export async function fetchWixSchoolsByCity(
         },
         returnTotalCount: true,
       }),
-      next: { revalidate: 3600 },
+      next: { revalidate: 60 },
     });
 
     if (!firstRes.ok) {
@@ -263,7 +300,7 @@ export async function fetchWixSchoolsByCity(
               dataCollectionId: WIX_COLLECTION_ID,
               query: { filter, paging: { limit: 100, offset } }
             }),
-            next: { revalidate: 3600 },
+            next: { revalidate: 60 },
           })
             .then(r => r.json())
             .then(d => (d.dataItems || []).map((i: { data: Record<string, unknown> }) => i.data || {}))
@@ -302,8 +339,8 @@ export async function fetchWixSchoolsByCity(
 }
 
 /**
- * Fetch all schools from Wix CMS collection `Import9`.
- * If offline or credentials not configured, seamlessly falls back to pre-bundled 405 schools.
+ * Fetch all schools from live Wix CMS collection.
+ * Automatically handles pagination and caches with 60s revalidation.
  */
 export async function fetchWixSchools(): Promise<School[]> {
   if (!isWixConfigured()) {
@@ -311,41 +348,73 @@ export async function fetchWixSchools(): Promise<School[]> {
   }
 
   try {
-    const allSchools: School[] = [];
-    let offset = 0;
-    const limit = 100;
+    const firstRes = await fetch('https://www.wixapis.com/wix-data/v2/items/query', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'wix-site-id': WIX_SITE_ID,
+        Authorization: WIX_API_KEY,
+      },
+      body: JSON.stringify({
+        dataCollectionId: WIX_COLLECTION_ID,
+        query: { paging: { limit: 100, offset: 0 } },
+        returnTotalCount: true,
+      }),
+      next: { revalidate: 60 },
+    });
 
-    while (true) {
-      const response = await fetch('https://www.wixapis.com/wix-data/v2/items/query', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'wix-site-id': WIX_SITE_ID,
-          Authorization: WIX_API_KEY,
-        },
-        body: JSON.stringify({
-          dataCollectionId: WIX_COLLECTION_ID,
-          query: { paging: { limit, offset } },
-        }),
-        next: { revalidate: 3600 },
-      });
-
-      if (!response.ok) {
-        console.warn(`Wix query for ${WIX_COLLECTION_ID} failed [${response.status}]. Using fallback.`);
-        return SCHOOLS_DATA;
-      }
-
-      const json = await response.json();
-      const items = json.dataItems || [];
-      if (!items.length) break;
-
-      for (const item of items) {
-        allSchools.push(normalizeWixSchool(item.data || {}));
-      }
-
-      if (items.length < limit) break;
-      offset += limit;
+    if (!firstRes.ok) {
+      console.warn(`Wix query for ${WIX_COLLECTION_ID} failed [${firstRes.status}]. Using fallback.`);
+      return SCHOOLS_DATA;
     }
+
+    const firstJson = await firstRes.json();
+    const total = firstJson.pagingMetadata?.total ?? firstJson.totalCount ?? (firstJson.dataItems || []).length;
+    const allRawItems: Record<string, unknown>[] = (firstJson.dataItems || []).map((i: { data: Record<string, unknown> }) => i.data || {});
+
+    if (total > 100) {
+      const offsets: number[] = [];
+      for (let offset = 100; offset < total && offset < 5000; offset += 100) {
+        offsets.push(offset);
+      }
+
+      const additionalBatches = await Promise.all(
+        offsets.map(offset =>
+          fetch('https://www.wixapis.com/wix-data/v2/items/query', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'wix-site-id': WIX_SITE_ID,
+              Authorization: WIX_API_KEY,
+            },
+            body: JSON.stringify({
+              dataCollectionId: WIX_COLLECTION_ID,
+              query: { paging: { limit: 100, offset } },
+            }),
+            next: { revalidate: 60 },
+          })
+            .then(r => r.json())
+            .then(d => (d.dataItems || []).map((i: { data: Record<string, unknown> }) => i.data || {}))
+            .catch(() => [] as Record<string, unknown>[])
+        )
+      );
+
+      for (const batch of additionalBatches) {
+        allRawItems.push(...batch);
+      }
+    }
+
+    const seenSlugs = new Set<string>();
+    const allSchools: School[] = [];
+    allRawItems.forEach((raw, idx) => {
+      const school = normalizeWixSchool(raw, idx);
+      if (!seenSlugs.has(school.slug)) {
+        seenSlugs.add(school.slug);
+        allSchools.push(school);
+      } else {
+        allSchools.push({ ...school, slug: `${school.slug}-${idx}` });
+      }
+    });
 
     return allSchools.length > 0 ? allSchools : SCHOOLS_DATA;
   } catch (err) {
@@ -355,45 +424,52 @@ export async function fetchWixSchools(): Promise<School[]> {
 }
 
 /**
- * Find a school by its slug.
- * Checks pre-bundled schools first; if not found, queries Wix CMS.
+ * Find a school by its slug or ID.
+ * Returns local bundled school immediately for instant response,
+ * or queries live Wix CMS if not found locally (e.g. newly added school).
  */
 export async function getSchoolBySlug(slug: string): Promise<School | undefined> {
-  const local = SCHOOLS_DATA.find((s) => s.slug === slug);
-  if (local) return local;
+  const local = SCHOOLS_DATA.find((s) => s.slug === slug || s.id === slug);
+  if (local) {
+    return local;
+  }
 
   if (!isWixConfigured()) return undefined;
 
   try {
-    const response = await fetch('https://www.wixapis.com/wix-data/v2/items/query', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'wix-site-id': WIX_SITE_ID,
-        Authorization: WIX_API_KEY,
-      },
-      body: JSON.stringify({
-        dataCollectionId: WIX_COLLECTION_ID,
-        query: {
-          filter: {
-            $or: [
-              { slug: { $eq: slug } },
-              { _id: { $eq: slug } },
-            ],
-          },
-          paging: { limit: 1 },
+    // 1. Direct query by _id if slug looks like a UUID
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+    if (isUuid) {
+      const response = await fetch('https://www.wixapis.com/wix-data/v2/items/query', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'wix-site-id': WIX_SITE_ID,
+          Authorization: WIX_API_KEY,
         },
-      }),
-      next: { revalidate: 3600 },
-    });
+        body: JSON.stringify({
+          dataCollectionId: WIX_COLLECTION_ID,
+          query: {
+            filter: { _id: { $eq: slug } },
+            paging: { limit: 1 },
+          },
+        }),
+        next: { revalidate: 60 },
+      });
 
-    if (response.ok) {
-      const json = await response.json();
-      const item = json.dataItems?.[0];
-      if (item) {
-        return normalizeWixSchool(item.data || {});
+      if (response.ok) {
+        const json = await response.json();
+        const item = json.dataItems?.[0];
+        if (item) {
+          return normalizeWixSchool(item.data || {});
+        }
       }
     }
+
+    // 2. Lookup in live Wix collection (cached for 60s)
+    const liveSchools = await fetchWixSchools();
+    const liveMatch = liveSchools.find((s) => s.slug === slug || s.id === slug);
+    if (liveMatch) return liveMatch;
   } catch (err) {
     console.error(`Error querying Wix for slug ${slug}:`, err);
   }
@@ -412,7 +488,7 @@ export interface SearchWixSchoolsParams {
 }
 
 /**
- * High-performance search & pagination across all 5,249 schools in Wix CMS.
+ * High-performance search & pagination across all verified schools in Wix CMS.
  */
 export async function searchWixSchools(
   params: SearchWixSchoolsParams = {}
@@ -497,7 +573,7 @@ export async function searchWixSchools(
         },
         returnTotalCount: true,
       }),
-      next: { revalidate: 600 },
+      next: { revalidate: 60 },
     });
 
     if (!response.ok) {
@@ -545,7 +621,7 @@ export interface MatchedSchoolResult {
 }
 
 /**
- * Intelligent Matcher Engine that matches candidate schools against the live 5,249 database.
+ * Intelligent Matcher Engine that matches candidate schools against the live database.
  */
 export async function matchWixSchools(
   prefs: MatcherPreferences
