@@ -477,11 +477,66 @@ export async function getSchoolBySlug(slug: string): Promise<School | undefined>
   return undefined;
 }
 
+export function matchBudgetFilter(
+  school: School, 
+  budget?: string, 
+  customMin?: number, 
+  customMax?: number
+): boolean {
+  // 1. Direct custom range parameters
+  if (customMin !== undefined || customMax !== undefined) {
+    const min = customMin ?? 0;
+    const max = customMax !== undefined && customMax < 2500000 ? customMax : Infinity;
+    if (school.feeMin === 0 && school.feeMax === 0) return true;
+    return school.feeMin <= max && school.feeMax >= min;
+  }
+
+  if (!budget || budget === 'All') return true;
+
+  // 2. Encoded custom range string: 'custom:min-max'
+  if (budget.startsWith('custom:')) {
+    const range = budget.slice(7);
+    const parts = range.split('-');
+    const min = parts[0] ? parseInt(parts[0], 10) : 0;
+    const max = parts[1] && parseInt(parts[1], 10) < 2500000 ? parseInt(parts[1], 10) : Infinity;
+    if (school.feeMin === 0 && school.feeMax === 0) return true;
+    return school.feeMin <= max && school.feeMax >= min;
+  }
+
+  // 3. Preset ranges
+  if (budget === 'under2') {
+    return school.feeMax <= 200000 || (school.feeMin <= 150000 && school.feeMax <= 250000);
+  }
+  if (budget === '2to5') {
+    return (school.feeMax > 200000 && school.feeMin <= 500000) || (school.feeMin >= 150000 && school.feeMax <= 600000);
+  }
+  if (budget === '5to10') {
+    return (school.feeMax > 500000 && school.feeMin <= 1000000) || (school.feeMin >= 350000 && school.feeMax <= 1000000);
+  }
+  if (budget === 'above10') {
+    return school.feeMax > 1000000 || school.feeMin >= 800000;
+  }
+  // Backward compatibility with legacy/matcher options
+  if (budget === 'under3' || budget === '150000' || budget === '350000') {
+    return school.feeMin <= 300000;
+  }
+  if (budget === '3to7' || budget === '700000') {
+    return school.feeMax >= 300000 && school.feeMin <= 700000;
+  }
+  if (budget === 'above7' || budget === '1500000') {
+    return school.feeMax >= 700000 || school.feeMin >= 700000;
+  }
+  return true;
+}
+
 export interface SearchWixSchoolsParams {
   city?: string;
   board?: string;
   query?: string;
   grade?: string;
+  budget?: string;
+  minFee?: number;
+  maxFee?: number;
   limit?: number;
   offset?: number;
   sort?: string;
@@ -498,9 +553,13 @@ export async function searchWixSchools(
   const city = params.city || 'All';
   const board = params.board || 'All';
   const q = params.query ? params.query.trim() : '';
+  const budget = params.budget || 'All';
+  const hasCustomFee = params.minFee !== undefined || params.maxFee !== undefined || budget.startsWith('custom:');
+  const isBudgetFiltered = budget !== 'All' || hasCustomFee;
 
-  if (!isWixConfigured()) {
-    let list = SCHOOLS_DATA;
+  // If budget filter is active or offline/fallback, use full normalized collection for perfect accuracy
+  if (isBudgetFiltered || !isWixConfigured()) {
+    let list = await fetchWixSchools();
     if (city !== 'All') {
       const cityVals = getCityQueryValues(city).map(v => v.toLowerCase());
       list = list.filter(s => cityVals.some(cv => s.city.toLowerCase().includes(cv)));
@@ -508,10 +567,29 @@ export async function searchWixSchools(
     if (board !== 'All') {
       list = list.filter(s => s.board.toLowerCase().includes(board.toLowerCase()));
     }
+    if (params.grade && params.grade !== 'All') {
+      list = list.filter(s => s.grades.toLowerCase().includes(params.grade!.toLowerCase()));
+    }
     if (q) {
       const qLower = q.toLowerCase();
-      list = list.filter(s => s.schoolName.toLowerCase().includes(qLower));
+      list = list.filter(s =>
+        s.schoolName.toLowerCase().includes(qLower) ||
+        s.board.toLowerCase().includes(qLower) ||
+        s.city.toLowerCase().includes(qLower) ||
+        s.address.toLowerCase().includes(qLower)
+      );
     }
+    if (isBudgetFiltered) {
+      list = list.filter(s => matchBudgetFilter(s, budget, params.minFee, params.maxFee));
+    }
+    if (params.sort === 'name') {
+      list = [...list].sort((a, b) => a.schoolName.localeCompare(b.schoolName));
+    } else if (params.sort === 'feesLow') {
+      list = [...list].sort((a, b) => a.feeMin - b.feeMin);
+    } else if (params.sort === 'feesHigh') {
+      list = [...list].sort((a, b) => b.feeMax - a.feeMax);
+    }
+
     const total = list.length;
     const schools = list.slice(offset, offset + limit);
     return { schools, total, hasMore: offset + limit < total };

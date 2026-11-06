@@ -22,19 +22,28 @@ export async function GET(request: NextRequest) {
     const board = searchParams.get('board') || 'All';
     const q = searchParams.get('q') || '';
     const grade = searchParams.get('grade') || 'All';
+    const budget = searchParams.get('budget') || searchParams.get('fee') || 'All';
+    const minFeeParam = searchParams.get('minFee');
+    const maxFeeParam = searchParams.get('maxFee');
+    const minFee = minFeeParam ? parseInt(minFeeParam, 10) : undefined;
+    const maxFee = maxFeeParam ? parseInt(maxFeeParam, 10) : undefined;
     const sort = searchParams.get('sort') || 'name';
     const limitParam = searchParams.get('limit');
     const offsetParam = searchParams.get('offset');
 
-    const limit = limitParam ? parseInt(limitParam, 10) : (city !== 'All' && !q && board === 'All' ? 300 : 60);
+    const isBudgetActive = budget !== 'All' || minFee !== undefined || maxFee !== undefined;
+    const limit = limitParam ? parseInt(limitParam, 10) : (city !== 'All' && !q && board === 'All' && !isBudgetActive ? 300 : 60);
     const offset = offsetParam ? parseInt(offsetParam, 10) : 0;
 
-    // If city is specific and no keyword/board filter, fetch full city list with parallel batches
-    if (city !== 'All' && !q && board === 'All' && !offsetParam) {
+    // If city is specific and no keyword/board/budget filter, fetch full city list with parallel batches
+    if (city !== 'All' && !q && board === 'All' && !isBudgetActive && !offsetParam) {
       const { schools, total } = await fetchWixSchoolsByCity(city, true);
       return NextResponse.json({
         city,
         board,
+        budget,
+        minFee,
+        maxFee,
         total,
         count: schools.length,
         offset: 0,
@@ -50,6 +59,9 @@ export async function GET(request: NextRequest) {
       board,
       query: q,
       grade,
+      budget,
+      minFee,
+      maxFee,
       limit,
       offset,
       sort,
@@ -58,6 +70,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       city,
       board,
+      budget,
+      minFee,
+      maxFee,
       query: q,
       total,
       count: schools.length,
